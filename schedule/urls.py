@@ -16,12 +16,10 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path,re_path
-from . import views
+from django.urls import include, path,re_path
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    re_path("log_in", views.log_in),
-    re_path("sign_up", views.sign_up),
-    re_path("test_token", views.test_token),
+    path('api/', include('agenda.urls')),
 ]
