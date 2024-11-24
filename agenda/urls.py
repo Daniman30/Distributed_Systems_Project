@@ -27,4 +27,9 @@ urlpatterns = [
     path('contacts/', Contact.ContactListCreateView.as_view(), name='contacts'),
     path('groups/', Group.GroupListCreateView.as_view(), name='groups'),
     path('groups/add-member/', Group_membership.AddMemberView.as_view(), name='add-member'),
+    path('groups/<int:group_id>/delete/', Group.DeleteGroupView.as_view(), name='delete-group'),
+    path('groups/<int:group_id>/remove-member/<int:user_id>/', Group_membership.RemoveMemberView.as_view(), name='remove-member'),
+    path('contacts/<int:contact_id>/delete/', Contact.DeleteContactView.as_view(), name='delete-contact'),
+    path('groups/<int:group_id>/leave/', Group_membership.LeaveGroupView.as_view(), name='leave-group'),
+
 ]

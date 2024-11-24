@@ -22,7 +22,11 @@ class GroupListCreateView(APIView):
             GroupMembership.objects.create(group=group, user=request.user, role='admin')
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
-    
+
+
+class DeleteGroupView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def delete(self, request, group_id):
         try:
             group = Group.objects.get(id=group_id)
@@ -36,3 +40,5 @@ class GroupListCreateView(APIView):
 
         # Eliminar el grupo
         group.delete()
+        return Response({"message": "Grupo eliminado correctamente."}, status=status.HTTP_204_NO_CONTENT)
+
