@@ -24,7 +24,7 @@ urlpatterns = [
     re_path("log_in", Register.log_in),
     re_path("sign_up", Register.sign_up),
     re_path("test_token", Register.test_token),
-    re_path('contacts/', Contact.ContactListCreateView.as_view(), name='contacts'),
-    re_path('groups/', Group.GroupListCreateView.as_view(), name='groups'),
-    re_path('groups/add-member/', Group_membership.AddMemberView.as_view(), name='add-member'),
+    path('contacts/', Contact.ContactListCreateView.as_view(), name='contacts'),
+    path('groups/', Group.GroupListCreateView.as_view(), name='groups'),
+    path('groups/add-member/', Group_membership.AddMemberView.as_view(), name='add-member'),
 ]
