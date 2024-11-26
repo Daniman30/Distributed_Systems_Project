@@ -17,9 +17,13 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path,re_path
-from agenda.views import Register, Contact,Group,Group_membership
+from agenda.views import Register, Contact,Group,Group_membership,views
 
 urlpatterns = [
+    path('', views.index, name='index'),
+    path('login/', views.login, name='login'),
+    path('register/', views.register, name='register'),
+    path('forgot/', views.forgot, name='forgot'),
     path("admin/", admin.site.urls),
     re_path("log_in", Register.log_in),
     re_path("sign_up", Register.sign_up),
