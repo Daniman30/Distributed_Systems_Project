@@ -17,11 +17,15 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path,re_path
-from agenda.views import Register, Contact,Group,Group_membership,Event
+from agenda.views import Register, Contact,Group,Group_membership,Event,views
 
 urlpatterns = [
-    #path("admin/", admin.site.urls),
-    
+    path('', views.index, name='index'),
+    path('login/', views.login, name='login'),
+    path('register/', views.register, name='register'),
+    path('forgot/', views.forgot, name='forgot'),
+   
+    re_path("test_token", Register.test_token),
     path('contacts/', Contact.ContactListCreateView.as_view(), name='contacts'),
     path('groups/', Group.GroupListCreateView.as_view(), name='groups'),
     path('groups/add-member/', Group_membership.AddMemberView.as_view(), name='add-member'),
