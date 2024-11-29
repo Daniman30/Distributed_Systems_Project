@@ -17,13 +17,11 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path,re_path
-from agenda.views import Register, Contact,Group,Group_membership
+from agenda.views import Register, Contact,Group,Group_membership,Event
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    re_path("log_in", Register.log_in),
-    re_path("sign_up", Register.sign_up),
-    re_path("test_token", Register.test_token),
+    #path("admin/", admin.site.urls),
+    
     path('contacts/', Contact.ContactListCreateView.as_view(), name='contacts'),
     path('groups/', Group.GroupListCreateView.as_view(), name='groups'),
     path('groups/add-member/', Group_membership.AddMemberView.as_view(), name='add-member'),
@@ -31,5 +29,9 @@ urlpatterns = [
     path('groups/<int:group_id>/remove-member/<int:user_id>/', Group_membership.RemoveMemberView.as_view(), name='remove-member'),
     path('contacts/<int:contact_id>/delete/', Contact.DeleteContactView.as_view(), name='delete-contact'),
     path('groups/<int:group_id>/leave/', Group_membership.LeaveGroupView.as_view(), name='leave-group'),
-
+    path('events/<int:event_id>/accept/', Event.AcceptEventView.as_view(), name='accept-event'),
+    path('events/<int:event_id>/cancel/', Event.CancelEventView.as_view(), name='cancel-event'),
+    path('events/', Event.EventListView.as_view(), name='list-events'),
+    path('events/create/', Event.EventCreateView.as_view(), name='create-event'),
+    path('events/pending/', Event.PendingEventsView.as_view(), name='pending-events'),
 ]
