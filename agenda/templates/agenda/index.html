@@ -46,10 +46,11 @@
 
             <!-- Change Month - Dashboard -->
             <li class="nav-item">
-                <a class="nav-link" href="/api/">
-                    <i class="fas fa-fw fa-caret-left"></i>
-                    <span>Actual Month</span>
-                    <i class="fas fa-fw fa-caret-right"></i></a>
+                <div class="change-month">
+                    <i class="fas fa-fw fa-caret-left" id="calendar-prev"></i>
+                    <span class="calendar-current-date"></span>
+                    <i class="fas fa-fw fa-caret-right" id="calendar-next"></i>
+                </div>
             </li>
 
             <!-- Add Event - Dashboard -->
@@ -331,7 +332,7 @@
                 </nav>
                 <!-- End of Topbar -->
             <div class="calendar-container"></div>
-                <div class="calendar-body">
+                <div class="calendar-body" onload="manipulate()">
                     <ul class="calendar-weekdays">
                         <li>Sun</li>
                         <li>Mon</li>
@@ -342,62 +343,17 @@
                         <li>Sat</li>
                     </ul>
                     <ul class="calendar-dates">
-                        <li>1</li>
-                        <li>2</li>
-                        <li>3</li>
-                        <li>4</li>
-                        <li>5</li>
-                        <li>6</li>
-                        <li>7</li>
                     </ul>
                     <ul class="calendar-dates">
-                        <li>8</li>
-                        <li>9</li>
-                        <li>10</li>
-                        <li>11</li>
-                        <li>12</li>
-                        <li>13</li>
-                        <li>14</li>
                     </ul>
                     <ul class="calendar-dates">
-                        <li>15</li>
-                        <li>16</li>
-                        <li>17</li>
-                        <li>18</li>
-                        <li>19</li>
-                        <li>20</li>
-                        <li>21</li>
                     </ul>
                     <ul class="calendar-dates">
-                        <li>22</li>
-                        <li>23</li>
-                        <li>24</li>
-                        <li>25</li>
-                        <li>26</li>
-                        <li>27</li>
-                        <li>28</li>
                     </ul>
                     <ul class="calendar-dates">
-                        <li>29</li>
-                        <li>30</li>
-                        <li>1</li>
-                        <li>2</li>
-                        <li>3</li>
-                        <li>4</li>
-                        <li>5</li>
                     </ul>
                 </div>
             </div>
-            <!-- Footer -->
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2021</span>
-                    </div>
-                </div>
-            </footer>
-            <!-- End of Footer -->
-
         </div>
         <!-- End of Content Wrapper -->
 

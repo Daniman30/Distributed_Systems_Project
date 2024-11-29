@@ -4049,6 +4049,7 @@
   
   .nav-tabs .nav-link:hover, .nav-tabs .nav-link:focus {
     border-color: #eaecf4 #eaecf4 #dddfeb;
+    color: rgba(0, 0, 0, 0.7);
   }
   
   .nav-tabs .nav-link.disabled {
@@ -9827,6 +9828,7 @@
     color: #fff;
     background: rgba(90, 92, 105, 0.5);
     line-height: 46px;
+    z-index: 1;
   }
   
   .scroll-to-top:focus, .scroll-to-top:hover {
@@ -11325,7 +11327,10 @@
   }
 
   .calendar-body {
-      padding: 20px;
+      padding: 0px;
+      display: flex;
+      flex-direction: column;
+      min-height: 80vh;
   }
 
   .calendar-body ul {
@@ -11333,22 +11338,29 @@
       flex-wrap: wrap;
       display: flex;
       text-align: center;
+      margin-bottom: 0rem;
+      padding-left: 2rem;
+      padding-right: 2rem;
   }
 
   .calendar-body .calendar-dates {
-      margin-bottom: 20px;
+      margin-bottom: 0px;
+      flex: 1;
   }
 
   .calendar-body li {
       width: calc(100% / 7);
-      font-size: 1.07rem;
+      flex-basis: calc(100% / 7);
+      box-sizing: border-box;
       color: #414141;
   }
 
   .calendar-dates li:hover{
       width: calc(100% / 7);
-      font-size: 1.07rem;
+      font-size: 1.0rem;
       color: #414141;
+      background-color: #e4e1e1;
+      z-index: 1;
   }
 
   .calendar-body .calendar-weekdays li {
@@ -11357,18 +11369,15 @@
   }
 
   .calendar-body .calendar-dates li {
-      margin-top: 30px;
-      position: relative;
-      z-index: 1;
       cursor: pointer;
   }
 
   .calendar-dates li.inactive {
-      color: #aaa;
+      color: #414141;
   }
 
   .calendar-dates li.active {
-      color: #fff;
+      color: #414141;
   }
 
   .calendar-dates li::before {
@@ -11383,10 +11392,275 @@
       transform: translate(-50%, -50%);
   }
 
-  .calendar-dates li.active::before {
+  /* .calendar-dates li.active::before {
       background: #6332c5;
+  } */
+
+  /* .calendar-dates li:not(.active):hover::before {
+      background: #e4e1e1;
+  } */
+
+  .change-month {
+    display: block;
+    padding: 0.5rem 1rem;
+  }
+  
+  .change-month:hover, .change-month:focus {
+    text-decoration: none;
+  }
+  
+  .change-month.disabled {
+    color: #858796;
+    pointer-events: none;
+    cursor: default;
   }
 
-  .calendar-dates li:not(.active):hover::before {
-      background: #e4e1e1;
+  .nav-tabs .change-month {
+    margin-bottom: -1px;
+    border: 1px solid transparent;
+    border-top-left-radius: 0.35rem;
+    border-top-right-radius: 0.35rem;
+  }
+  
+  .nav-tabs .change-month:hover, .nav-tabs .change-month:focus {
+    border-color: #eaecf4 #eaecf4 #dddfeb;
+    color: rgba(0, 0, 0, 0.7);
+  }
+  
+  .nav-tabs .change-month.disabled {
+    color: #858796;
+    background-color: transparent;
+    border-color: transparent;
+  }
+  
+  .nav-tabs .change-month.active,
+  .nav-tabs .nav-item.show .change-month {
+    color: #6e707e;
+    background-color: #fff;
+    border-color: #dddfeb #dddfeb #fff;
+  }
+  
+  .nav-pills .change-month {
+    border-radius: 0.35rem;
+  }
+  
+  .nav-pills .change-month.active,
+  .nav-pills .show > .change-month {
+    color: #fff;
+    background-color: #4e73df;
+  }
+  
+  .nav-fill > .change-month,
+  .nav-fill .nav-item {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+  
+  .nav-justified > .change-month,
+  .nav-justified .nav-item {
+    flex-basis: 0;
+    flex-grow: 1;
+    text-align: center;
+  }
+  
+  .navbar-nav .change-month {
+    padding-right: 0;
+    padding-left: 0;
+  }
+  .navbar-expand-sm .navbar-nav .change-month {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+  .navbar-expand-md .navbar-nav .change-month {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+  .navbar-expand-lg .navbar-nav .change-month {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+  .navbar-expand-xl .navbar-nav .change-month {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+  
+  .navbar-expand .navbar-nav .change-month {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+  
+  .navbar-light .navbar-nav .change-month {
+    color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .navbar-light .navbar-nav .change-month:hover, .navbar-light .navbar-nav .change-month:focus {
+    color: rgba(0, 0, 0, 0.7);
+  }
+  
+  .navbar-light .navbar-nav .change-month.disabled {
+    color: rgba(0, 0, 0, 0.3);
+  }
+  
+  .navbar-light .navbar-nav .show > .change-month,
+  .navbar-light .navbar-nav .active > .change-month,
+  .navbar-light .navbar-nav .change-month.show,
+  .navbar-light .navbar-nav .change-month.active {
+    color: rgba(0, 0, 0, 0.9);
+  }
+  
+  .navbar-dark .navbar-nav .change-month {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .navbar-dark .navbar-nav .change-month:hover, .navbar-dark .navbar-nav .change-month:focus {
+    color: rgba(255, 255, 255, 0.75);
+  }
+  
+  .navbar-dark .navbar-nav .change-month.disabled {
+    color: rgba(255, 255, 255, 0.25);
+  }
+  
+  .sidebar .nav-item .change-month,
+  .topbar .nav-item .change-month {
+    position: relative;
+  }
+  
+  .sidebar .nav-item .change-month .badge-counter,
+  .topbar .nav-item .change-month .badge-counter {
+    position: absolute;
+    transform: scale(0.7);
+    transform-origin: top right;
+    right: .25rem;
+    margin-top: -.25rem;
+  }
+  
+  .sidebar .nav-item .change-month .img-profile,
+  .topbar .nav-item .change-month .img-profile {
+    height: 2rem;
+    width: 2rem;
+  }
+  
+  .topbar .nav-item .change-month {
+    height: 4.375rem;
+    display: flex;
+    align-items: center;
+    padding: 0 0.75rem;
+  }
+  
+  .topbar .nav-item .change-month:focus {
+    outline: none;
+  }
+  
+  .topbar.navbar-dark .navbar-nav .nav-item .change-month {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .topbar.navbar-light .navbar-nav .nav-item .change-month {
+    color: #d1d3e2;
+  }
+  
+  .topbar.navbar-light .navbar-nav .nav-item .change-month:hover {
+    color: #b7b9cc;
+  }
+  
+  .topbar.navbar-light .navbar-nav .nav-item .change-month:active {
+    color: #858796;
+  }
+  
+  .sidebar .nav-item .change-month {
+    text-align: center;
+    padding: 0.75rem 1rem;
+    width: 6.5rem;
+  }
+  
+  .sidebar .nav-item .change-month span {
+    font-size: 0.65rem;
+    display: block;
+  }
+  
+  .sidebar .nav-item.active .change-month {
+    font-weight: 700;
+  }
+  .sidebar .nav-item .change-month {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 1rem;
+    width: 14rem;
+  }
+  .sidebar .nav-item .change-month i {
+    font-size: 0.85rem;
+    margin-right: 0.25rem;
+  }
+  .sidebar .nav-item .change-month span {
+    font-size: 0.85rem;
+    display: inline;
+  }
+  .sidebar .nav-item .change-month[data-toggle="collapse"]::after {
+    width: 1rem;
+    text-align: center;
+    float: right;
+    vertical-align: 0;
+    border: 0;
+    font-weight: 900;
+    content: '\f107';
+    font-family: 'Font Awesome 5 Free';
+  }
+  .sidebar .nav-item .change-month[data-toggle="collapse"].collapsed::after {
+    content: '\f105';
+  }
+  .sidebar.toggled .nav-item .change-month {
+    text-align: center;
+    padding: 0.75rem 1rem;
+    width: 6.5rem;
+  }
+  .sidebar.toggled .nav-item .change-month span {
+    font-size: 0.65rem;
+    display: block;
+  }
+  .sidebar.toggled .nav-item .change-month i {
+    margin-right: 0;
+  }
+  .sidebar.toggled .nav-item .change-month[data-toggle="collapse"]::after {
+    display: none;
+  }
+  
+  .sidebar-light .nav-item .change-month {
+    color: #858796;
+  }
+  
+  .sidebar-light .nav-item .change-month i {
+    color: #d1d3e2;
+  }
+  
+  .sidebar-light .nav-item .change-month:active, .sidebar-light .nav-item .change-month:focus, .sidebar-light .nav-item .change-month:hover {
+    color: #6e707e;
+  }
+  
+  .sidebar-light .nav-item .change-month:active i, .sidebar-light .nav-item .change-month:focus i, .sidebar-light .nav-item .change-month:hover i {
+    color: #6e707e;
+  }
+  
+  .sidebar-light .nav-item .change-month[data-toggle="collapse"]::after {
+    color: #b7b9cc;
+  }
+  
+  .sidebar-light .nav-item.active .change-month {
+    color: #6e707e;
+  }
+  
+  .sidebar-light .nav-item.active .change-month i {
+    color: #6e707e;
+  }
+  
+  .sidebar-dark .nav-item .change-month {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .sidebar-dark .nav-item .change-month i {
+    color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .sidebar-dark .nav-item .change-month[data-toggle="collapse"]::after {
+    color: rgba(255, 255, 255, 0.5);
   }
