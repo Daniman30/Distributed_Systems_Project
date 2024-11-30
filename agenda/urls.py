@@ -21,8 +21,8 @@ from agenda.views import Register, Contact,Group,Group_membership,Event,views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('login/', views.login, name='login'),
-    path('register/', views.register, name='register'),
+    path('login/', Register.log_in, name='login'),
+    path('register/', Register.sign_up, name='register'),
     path('forgot/', views.forgot, name='forgot'),
    
     re_path("test_token", Register.test_token),

@@ -1,4 +1,4 @@
-POST http://127.0.0.1:8000/log_in/
+POST http://127.0.0.1:8000/api/log_in/
 Content-Type: application/json
 
 { "username":"Pedro", "password": "Pass1234!" }

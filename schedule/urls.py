@@ -23,7 +23,4 @@ from agenda.views import Register
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/', include('agenda.urls')),
-    path('log_in/', Register.log_in, name='log_in'),
-    re_path("sign_up", Register.sign_up),
-    re_path("test_token", Register.test_token),
 ]
