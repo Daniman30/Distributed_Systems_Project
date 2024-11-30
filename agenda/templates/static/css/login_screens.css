@@ -232,6 +232,12 @@
   
   button {
     border-radius: 0;
+    background-color: #4e73df;
+    color: #d4ddf6;
+  }
+
+  button:hover {
+    color: #fff;
   }
   
   button:focus:not(:focus-visible) {
@@ -11392,9 +11398,10 @@
       transform: translate(-50%, -50%);
   }
 
-  /* .calendar-dates li.active::before {
-      background: #6332c5;
-  } */
+  .calendar-dates li.active {
+      color: #000;
+      background-color: #a9b9e7;
+  }
 
   /* .calendar-dates li:not(.active):hover::before {
       background: #e4e1e1;
@@ -11663,4 +11670,58 @@
   
   .sidebar-dark .nav-item .change-month[data-toggle="collapse"]::after {
     color: rgba(255, 255, 255, 0.5);
+  }
+
+  .calendar-navigation {
+    color: #7b95e2;
+    cursor: pointer;
+  }
+
+  .calendar-navigation:hover {
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .isToday {
+    background-color: red;
+  }
+
+  .accordion #calendar-next {
+    float: right;
+    padding-top: 0.15rem;
+  }
+
+  .sidebar.toggled #calendar-next {
+    float: none;
+    padding-top: 0rem;
+  }
+
+  .floating-menu {
+      display: none;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px;
+      background-color: #4e73df;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+  }
+  .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+  }
+
+  p {
+    color: #d4ddf6;
   }

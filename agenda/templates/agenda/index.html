@@ -47,25 +47,36 @@
             <!-- Change Month - Dashboard -->
             <li class="nav-item">
                 <div class="change-month">
-                    <i class="fas fa-fw fa-caret-left" id="calendar-prev"></i>
+                    <a class="fas fa-fw fa-caret-left calendar-navigation" id="calendar-prev"></a>
                     <span class="calendar-current-date"></span>
-                    <i class="fas fa-fw fa-caret-right" id="calendar-next"></i>
+                    <a class="fas fa-fw fa-caret-right calendar-navigation" id="calendar-next"></a>
                 </div>
             </li>
 
-            <!-- Add Event - Dashboard -->
             <li class="nav-item">
-                <a class="nav-link" href="/api/">
+                <a class="nav-link abrirMenu" data-menu="menu1" href="">
                     <i class="fas fa-fw fa-plus"></i>
-                    <span>Add Event</span></a>
+                    <span>Add Event</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link abrirMenu" data-menu="menu2" href="">
+                    <i class="fas fa-fw fa-cog"></i>
+                    <span>Configuration</span>
+                </a>
             </li>
 
-            <!-- Configuration - Dashboard -->
-            <li class="nav-item">
-                <a class="nav-link" href="/api/">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>Configuration</span></a>
-            </li>            
+            <!-- Overlays y Menús flotantes -->
+            <div class="overlay" id="overlay"></div>
+
+            <div class="floating-menu" id="menu1">
+                <p>Create a new Event</p>
+                <button class="closeMenu">Cerrar</button>
+            </div>
+            <div class="floating-menu" id="menu2">
+                <p>Configurations</p>
+                <button class="closeMenu">Cerrar</button>
+            </div>
 
             <!-- Divider -->
             <hr class="sidebar-divider">
@@ -84,9 +95,9 @@
                 </a>
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" href="buttons.html">Buttons</a>
-                        <a class="collapse-item" href="cards.html">Cards</a>
+                        <h6 class="collapse-header">Group calendars</h6>
+                        <a class="collapse-item" href="buttons.html">Work</a>
+                        <a class="collapse-item" href="cards.html">Friends</a>
                     </div>
                 </div>
             </li>
@@ -101,11 +112,11 @@
                 <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Utilities:</h6>
-                        <a class="collapse-item" href="utilities-color.html">Colors</a>
-                        <a class="collapse-item" href="utilities-border.html">Borders</a>
-                        <a class="collapse-item" href="utilities-animation.html">Animations</a>
-                        <a class="collapse-item" href="utilities-other.html">Other</a>
+                        <h6 class="collapse-header">Contact calendars:</h6>
+                        <a class="collapse-item" href="utilities-color.html">Daniel</a>
+                        <a class="collapse-item" href="utilities-border.html">Nanda</a>
+                        <a class="collapse-item" href="utilities-animation.html">Juan</a>
+                        <a class="collapse-item" href="utilities-other.html">Ana</a>
                     </div>
                 </div>
             </li>
