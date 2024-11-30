@@ -8,7 +8,7 @@ const currdate = document
     .querySelector(".calendar-current-date");
 
 const prenexIcons = document
-    .querySelectorAll(".calendar-navigation span");
+    .querySelectorAll(".calendar-navigation");
 
 // Array of month names
 const months = [
@@ -113,3 +113,56 @@ prenexIcons.forEach(icon => {
         manipulate();
     });
 });
+
+// document.getElementById('openMenu').addEventListener('click', function(event) {
+//     event.preventDefault();
+//     document.getElementById('overlay').style.display = 'flex';
+//     document.getElementById('floatingMenu').style.display = 'flex';
+// });
+
+// document.getElementById('closeMenu').addEventListener('click', function() {
+//     document.getElementById('overlay').style.display = 'none';
+//     document.getElementById('floatingMenu').style.display = 'none';
+// });
+
+// document.getElementById('overlay').addEventListener('click', function() {
+//     document.getElementById('overlay').style.display = 'none';
+//     document.getElementById('floatingMenu').style.display = 'none';
+// });
+
+// Variables globales
+const overlay = document.getElementById('overlay');
+let activeMenu = null; // Para rastrear qué menú está activo
+
+// Evento para abrir menús flotantes
+document.querySelectorAll('.abrirMenu').forEach(button => {
+    button.addEventListener('click', function (event) {
+        event.preventDefault(); // Previene el comportamiento predeterminado del enlace
+
+        // Identifica el menú a abrir
+        const menuId = this.getAttribute('data-menu');
+        const menu = document.getElementById(menuId);
+
+        // Muestra el overlay y el menú flotante correspondiente
+        if (menu) {
+            overlay.style.display = 'flex';
+            menu.style.display = 'flex';
+            activeMenu = menu; // Guarda el menú activo
+        }
+    });
+});
+
+// Evento para cerrar menús
+overlay.addEventListener('click', closeMenu);
+document.querySelectorAll('.closeMenu').forEach(button => {
+    button.addEventListener('click', closeMenu);
+});
+
+// Función para cerrar el menú flotante activo
+function closeMenu() {
+    if (activeMenu) {
+        activeMenu.style.display = 'none';
+        overlay.style.display = 'none';
+        activeMenu = null; // Reinicia el menú activo
+    }
+}
