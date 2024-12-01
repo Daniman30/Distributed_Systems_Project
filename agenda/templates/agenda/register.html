@@ -37,16 +37,10 @@
                             <div class="text-center">
                                 <h1 class="h4 text-gray-900 mb-4">Create an Account!</h1>
                             </div>
-                            <form class="user">
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <input type="text" class="form-control form-control-user" id="exampleFirstName"
-                                            placeholder="First Name">
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <input type="text" class="form-control form-control-user" id="exampleLastName"
-                                            placeholder="Last Name">
-                                    </div>
+                            <form class="user" id="registerForm">
+                                <div class="form-group">
+                                    <input type="text" class="form-control form-control-user" id="exampleInputUsername"
+                                        placeholder="Username">
                                 </div>
                                 <div class="form-group">
                                     <input type="email" class="form-control form-control-user" id="exampleInputEmail"
@@ -62,10 +56,17 @@
                                             id="exampleRepeatPassword" placeholder="Repeat Password">
                                     </div>
                                 </div>
-                                <a href="../" class="btn btn-primary btn-user btn-block">
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox small">
+                                        <input type="checkbox" class="custom-control-input" id="customCheck">
+                                        <label class="custom-control-label" for="customCheck">Remember
+                                            Me</label>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-user btn-block" id="btn">
                                     Register Account
-                                </a>
-                            </form>
+                                </button>
+                            </form>                            
                             <hr>
                             <div class="text-center">
                                 <a class="small" href="../forgot/">Forgot Password?</a>
@@ -82,15 +83,7 @@
     </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="../static/js/jquery.js"></script>
-    <script src="../static/js/bootstrap.bundle.js"></script>
-
-    <!-- Core plugin JavaScript-->
-    <script src="../static/js/jquery.easing.js"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="../static/js/login_screens.js"></script>
-
+    <script src="{% static 'js/register.js' %}"></script>
 </body>
 
 </html>

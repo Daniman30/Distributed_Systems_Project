@@ -11710,7 +11710,19 @@
       border: 1px solid #ccc;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       z-index: 1000;
+      max-height: 400px; /* Ajusta la altura máxima */
+      overflow: hidden; /* Evita que los elementos sobresalgan */
   }
+
+  .floating-menu ul.get-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 300px; /* Define un límite de altura para el scroll */
+      overflow-y: auto; /* Habilita la barra de desplazamiento vertical */
+      overflow-x: hidden; /* Oculta el desplazamiento horizontal */
+  }
+
   .overlay {
       display: none;
       position: fixed;
@@ -11724,4 +11736,24 @@
 
   p {
     color: #d4ddf6;
+  }
+
+  .get-list{
+    list-style: none;
+    padding: 0;
+  }
+
+  .get-list li {
+    color: #becaef;
+    text-align: left;
+    margin-bottom: 1rem;
+    border-radius: 10%;
+    cursor: move;
+  }
+
+  .get-list li i:hover {
+    color: #ffffff;
+    text-align: left;
+    border-radius: 10%;
+    cursor: pointer;
   }

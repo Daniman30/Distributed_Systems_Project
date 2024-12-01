@@ -44,9 +44,8 @@
                                     </div>
                                     <form class="user">
                                         <div class="form-group">
-                                            <input type="email" class="form-control form-control-user"
-                                                id="exampleInputEmail" aria-describedby="emailHelp"
-                                                placeholder="Enter Email Address...">
+                                            <input type="text" class="form-control form-control-user"
+                                                id="exampleInputUsername" placeholder="Enter Username...">
                                         </div>
                                         <div class="form-group">
                                             <input type="password" class="form-control form-control-user"
@@ -59,9 +58,9 @@
                                                     Me</label>
                                             </div>
                                         </div>
-                                        <a href="../" class="btn btn-primary btn-user btn-block">
+                                        <button type="button" class="btn btn-primary btn-user btn-block" id="btn">
                                             Login
-                                        </a>
+                                        </button>
                                     </form>
                                     <hr>
                                     <div class="text-center">
@@ -82,15 +81,7 @@
 
     </div>
 
-    <!-- Bootstrap core JavaScript-->
-    <script src="../static/js/jquery.js"></script>
-    <script src="../static/js/bootstrap.bundle.js"></script>
-
-    <!-- Core plugin JavaScript-->
-    <script src="../static/js/jquery.easing.js"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="../static/js/login_screens.js"></script>
+    <script src="{% static 'js/login.js' %}"></script>
 
 </body>
 

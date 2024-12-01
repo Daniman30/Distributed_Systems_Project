@@ -54,13 +54,13 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link abrirMenu" data-menu="menu1" href="">
+                <a class="nav-link openMenu" data-menu="menu1" href="">
                     <i class="fas fa-fw fa-plus"></i>
                     <span>Add Event</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link abrirMenu" data-menu="menu2" href="">
+                <a class="nav-link openMenu" data-menu="menu2" href="">
                     <i class="fas fa-fw fa-cog"></i>
                     <span>Configuration</span>
                 </a>
@@ -69,12 +69,55 @@
             <!-- Overlays y Menús flotantes -->
             <div class="overlay" id="overlay"></div>
 
+            <!-- Create New Event -->
             <div class="floating-menu" id="menu1">
                 <p>Create a new Event</p>
                 <button class="closeMenu">Cerrar</button>
             </div>
+
+            <!-- Configurations -->
             <div class="floating-menu" id="menu2">
                 <p>Configurations</p>
+                <button class="closeMenu">Cerrar</button>
+            </div>
+
+            <!-- Add Contact -->
+            <div class="floating-menu" id="menu3">
+                <p>Add Contact</p>
+                <input type="text" class="form-control form-control-user"
+                    id="exampleInputUsername" placeholder="Contact Username">
+                <input type="text" class="form-control form-control-user"
+                    id="exampleInputEmail" placeholder="Contact Email">
+                <button type="button" class="btn btn-primary btn-user btn-block" id="btn_add_contact">Add Contact</button>
+                <button class="closeMenu">Cerrar</button>
+            </div>
+
+            <!-- List Contacts -->
+            <div class="floating-menu" id="menu4">
+                <p>Contacts</p>
+                <ul class="get-list" id="contact-list"></ul>
+                <button class="closeMenu">Cerrar</button>
+            </div>
+
+            <!-- Create Group -->
+            <div class="floating-menu" id="menu5">
+                <p>Create Group</p>
+                <input type="text" class="form-control form-control-user"
+                    id="GroupName" placeholder="Group Name">
+                <input type="text" class="form-control form-control-user"
+                    id="GroupDescription" placeholder="Group Description">
+                <div class="custom-control custom-checkbox small">
+                    <input type="checkbox" class="custom-control-input" id="is_hierarchical">
+                    <label class="custom-control-label" for="is_hierarchical">Hierarchical</label>
+                </div>
+                <button type="button" class="btn btn-primary btn-user btn-block" id="btn_create_group">Create Group</button>
+                <button class="closeMenu">Cerrar</button>
+            </div>
+
+            <!-- List Groups -->
+            <div class="floating-menu" id="menu6">
+                <p>Groups</p>
+                <ul class="get-list" id="group-list"></ul>
                 <button class="closeMenu">Cerrar</button>
             </div>
 
@@ -96,8 +139,8 @@
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Group calendars</h6>
-                        <a class="collapse-item" href="buttons.html">Work</a>
-                        <a class="collapse-item" href="cards.html">Friends</a>
+                        <a class="collapse-item openMenu" data-menu="menu5" href="">Create Group</a>
+                        <a class="collapse-item openMenu" data-menu="menu6" id="list_groups" href="">List Groups</a>
                     </div>
                 </div>
             </li>
@@ -112,11 +155,9 @@
                 <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Contact calendars:</h6>
-                        <a class="collapse-item" href="utilities-color.html">Daniel</a>
-                        <a class="collapse-item" href="utilities-border.html">Nanda</a>
-                        <a class="collapse-item" href="utilities-animation.html">Juan</a>
-                        <a class="collapse-item" href="utilities-other.html">Ana</a>
+                        <h6 class="collapse-header">Contact options:</h6>
+                        <a class="collapse-item openMenu" data-menu="menu3" href="">Add Contact</a>
+                        <a class="collapse-item openMenu" data-menu="menu4" id="list_contacts" href="">List Contacts</a>
                     </div>
                 </div>
             </li>
@@ -397,7 +438,9 @@
     </div>
     
     <!-- Calendar -->
-    <script src="../static/js/calendar.js"></script>
+    <script type="module" src="../static/js/calendar.js"></script>
+    <script type="module" src="../static/js/contacts.js"></script>
+    <script type="module" src="../static/js/groups.js"></script>
 
     <!-- Bootstrap core JavaScript-->
     <script src="../static/js/jquery.js"></script>

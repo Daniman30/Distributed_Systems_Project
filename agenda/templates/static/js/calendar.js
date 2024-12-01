@@ -114,28 +114,12 @@ prenexIcons.forEach(icon => {
     });
 });
 
-// document.getElementById('openMenu').addEventListener('click', function(event) {
-//     event.preventDefault();
-//     document.getElementById('overlay').style.display = 'flex';
-//     document.getElementById('floatingMenu').style.display = 'flex';
-// });
-
-// document.getElementById('closeMenu').addEventListener('click', function() {
-//     document.getElementById('overlay').style.display = 'none';
-//     document.getElementById('floatingMenu').style.display = 'none';
-// });
-
-// document.getElementById('overlay').addEventListener('click', function() {
-//     document.getElementById('overlay').style.display = 'none';
-//     document.getElementById('floatingMenu').style.display = 'none';
-// });
-
 // Variables globales
 const overlay = document.getElementById('overlay');
 let activeMenu = null; // Para rastrear qué menú está activo
 
 // Evento para abrir menús flotantes
-document.querySelectorAll('.abrirMenu').forEach(button => {
+document.querySelectorAll('.openMenu').forEach(button => {
     button.addEventListener('click', function (event) {
         event.preventDefault(); // Previene el comportamiento predeterminado del enlace
 
@@ -159,7 +143,7 @@ document.querySelectorAll('.closeMenu').forEach(button => {
 });
 
 // Función para cerrar el menú flotante activo
-function closeMenu() {
+export function closeMenu() {
     if (activeMenu) {
         activeMenu.style.display = 'none';
         overlay.style.display = 'none';
