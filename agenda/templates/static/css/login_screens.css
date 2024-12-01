@@ -372,10 +372,11 @@
     line-height: 1.2;
   }
   
-  h1, .h1 {
+  h1, .h1,  h5, .h5{
     font-size: 2.5rem;
+    color: #fff;
   }
-  
+
   h2, .h2 {
     font-size: 2rem;
   }
@@ -11723,7 +11724,8 @@
       overflow-x: hidden; /* Oculta el desplazamiento horizontal */
   }
 
-  .overlay {
+  .overlay,
+  .overlay2 {
       display: none;
       position: fixed;
       top: 0;
@@ -11738,22 +11740,35 @@
     color: #d4ddf6;
   }
 
-  .get-list{
+  .get-list {
     list-style: none;
     padding: 0;
-  }
+    margin: 0;
+    min-width: 300px;
+    max-height: 300px; /* Altura máxima para que el scroll sea necesario */
+    overflow-y: auto; /* Habilitar scroll solo en el eje Y */
+    padding-right: 15px; /* Espacio para evitar solapamiento de contenido */
+    box-sizing: content-box; /* Asegura que el padding no afecte el ancho total */
+}
 
-  .get-list li {
+.get-list li {
     color: #becaef;
     text-align: left;
     margin-bottom: 1rem;
     border-radius: 10%;
     cursor: move;
-  }
+}
 
-  .get-list li i:hover {
+  .get-list li i:hover,
+  h5 i:hover, 
+  #icon:hover {
     color: #ffffff;
     text-align: left;
     border-radius: 10%;
     cursor: pointer;
+  }
+  
+  h5 i,
+  #icon {
+    color: #d4ddf6;
   }
