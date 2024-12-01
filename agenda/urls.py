@@ -17,7 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path,re_path
-from agenda.views import Register, Contact,Group,Group_membership,Event,views
+from agenda.views import Register, Contact,Group,Group_membership,Event,views,Agenda
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -38,4 +38,5 @@ urlpatterns = [
     path('events/', Event.EventListView.as_view(), name='list-events'),
     path('events/create/', Event.EventCreateView.as_view(), name='create-event'),
     path('events/pending/', Event.PendingEventsView.as_view(), name='pending-events'),
+    path('agendas/', Agenda.AgendaView.as_view(), name='agendas'),
 ]

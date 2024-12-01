@@ -9,19 +9,25 @@ class EventListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Eventos personales
-        personal_events = Event.objects.filter(organizer=request.user)
+        # Listar eventos personales confirmados
+        personal_events = Event.objects.filter(
+            participants=request.user,
+            requires_acceptance=False
+        ).exclude(group__isnull=False)  # Excluir eventos grupales
 
-        # Eventos grupales
-        group_events = Event.objects.filter(group__members=request.user)
+        # Listar eventos grupales confirmados donde el usuario ha aceptado
+        group_events = Event.objects.filter(
+            participants=request.user,
+            requires_acceptance=False,
+            accepted_by=request.user  # Solo mostrar si el usuario aceptó
+        ).exclude(group__isnull=True)  # Excluir eventos personales
 
-        # Serializar y combinar resultados
         personal_serializer = EventSerializer(personal_events, many=True)
         group_serializer = EventSerializer(group_events, many=True)
 
         return Response({
             "personal_events": personal_serializer.data,
-            "group_events": group_serializer.data,
+            "group_events": group_serializer.data
         })
 
 class EventCreateView(APIView):
@@ -32,13 +38,7 @@ class EventCreateView(APIView):
         data['organizer'] = request.user.id
 
         group_id = data.get('group')
-        participants = data.get('participants', [])
-
-        # Si no hay participantes, el organizador es el único participante
-        if not participants:
-            participants = [request.user.id]
-
-        requires_acceptance = False  # Inicialmente no requiere aceptación
+        participants = []
 
         # Validar si es un evento grupal
         if group_id:
@@ -47,34 +47,39 @@ class EventCreateView(APIView):
             except Group.DoesNotExist:
                 return Response({"error": "El grupo especificado no existe."}, status=status.HTTP_404_NOT_FOUND)
 
-            # Verificar membresía
-            if not GroupMembership.objects.filter(group=group, user=request.user).exists():
-                return Response({"error": "No perteneces al grupo especificado."}, status=status.HTTP_403_FORBIDDEN)
+            # Obtener los participantes del grupo
+            participants = GroupMembership.objects.filter(group=group).values_list('user', flat=True)
+            data['participants'] = list(participants)
 
-            # Verificar si es admin en un grupo jerárquico
+            # Validar si el grupo es jerárquico y el creador es administrador
+            is_hierarchical = group.is_hierarchical
             is_admin = GroupMembership.objects.filter(group=group, user=request.user, role='admin').exists()
-            if not (group.is_hierarchical and is_admin):
-                requires_acceptance = True  # Requiere aceptación si no es admin en grupo jerárquico
-        else:
-            # Evento personal requiere aceptación si tiene más de un participante
-            if len(participants) > 1:
-                requires_acceptance = True
 
-        data['requires_acceptance'] = requires_acceptance
+            if is_hierarchical and is_admin:
+                # Si es jerárquico y el creador es admin, no requiere aceptación y está aceptado por todos
+                data['requires_acceptance'] = False
+                accepted_by = list(participants)  # Aceptado automáticamente por todos
+            else:
+                # Si no es jerárquico o el creador no es admin, requiere aceptación
+                data['requires_acceptance'] = True
+                accepted_by = [request.user.id]  # Solo aceptado por el creador
+        else:
+            # Si es un evento personal
+            participants = data.get('participants', [request.user.id])
+            data['participants'] = participants
+
+            # Requiere aceptación si tiene más de un participante
+            data['requires_acceptance'] = len(participants) > 1
+            accepted_by = [request.user.id]  # El creador lo acepta automáticamente
 
         serializer = EventSerializer(data=data)
         if serializer.is_valid():
             event = serializer.save()
-
-            # Añadir participantes
-            event.participants.add(*participants)
-
-            # Aceptación automática si es admin en grupo jerárquico
-            if group_id and group.is_hierarchical and is_admin:
-                event.accepted_by.add(*participants)
+            # Asignar participantes y aceptados
+            event.participants.add(*data['participants'])
+            event.accepted_by.add(*accepted_by)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     
