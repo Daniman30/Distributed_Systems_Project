@@ -2,6 +2,7 @@ import {closeMenu} from './calendar.js';
 
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
+// Obtener el id de un usuario a partir de su username y su email
 export function getUserId(username, email) {
     // Crear el objeto con los datos
     const data = {
@@ -41,6 +42,7 @@ export function getUserId(username, email) {
         });
 }
 
+// Adicionar nuevo contacto
 document.getElementById('btn_add_contact').addEventListener('click', function () {
     // Obtener los valores de los inputs
     const username = document.getElementById('exampleInputUsername').value;

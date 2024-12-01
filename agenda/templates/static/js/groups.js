@@ -1,5 +1,5 @@
 import {closeMenu} from './calendar.js';
-import {getUserId} from './contacts.js'
+import {getUserId} from './contacts.js';
 
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 

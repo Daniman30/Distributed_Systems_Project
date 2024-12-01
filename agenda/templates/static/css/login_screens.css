@@ -11711,7 +11711,7 @@
       border: 1px solid #ccc;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       z-index: 1000;
-      max-height: 400px; /* Ajusta la altura máxima */
+      max-height: 800px; /* Ajusta la altura máxima */
       overflow: hidden; /* Evita que los elementos sobresalgan */
   }
 
