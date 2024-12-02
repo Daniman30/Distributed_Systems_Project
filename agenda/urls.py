@@ -39,4 +39,5 @@ urlpatterns = [
     path('events/create/', Event.EventCreateView.as_view(), name='create-event'),
     path('events/pending/', Event.PendingEventsView.as_view(), name='pending-events'),
     path('agendas/', Agenda.AgendaView.as_view(), name='agendas'),
+    path('groups/<int:group_id>/agendas/', Agenda.GroupMemberAgendaView.as_view(), name='group_member_agenda'),
 ]
