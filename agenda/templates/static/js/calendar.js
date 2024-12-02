@@ -1,33 +1,22 @@
+import { dailyEvents } from "./event.js";
+
 let date = new Date();
 let year = date.getFullYear();
 let month = date.getMonth();
 
 const day = document.querySelector(".calendar-dates");
-
-const currdate = document
-    .querySelector(".calendar-current-date");
-
-const prenexIcons = document
-    .querySelectorAll(".calendar-navigation");
+const currdate = document.querySelector(".calendar-current-date");
+const prenexIcons = document.querySelectorAll(".calendar-navigation");
 
 // Array of month names
 const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
+    "January", "February", "March", "April", "May",
+    "June", "July", "August", "September", "October",
+    "November", "December"
 ];
 
 // Function to generate the calendar
-const manipulate = () => {
+export const manipulate = () => {
 
     // Get the first day of the month
     let dayone = new Date(year, month, 1).getDay();
@@ -46,20 +35,43 @@ const manipulate = () => {
 
     // Loop to add the last dates of the previous month
     for (let i = dayone; i > 0; i--) {
-        lit +=
-            `<li class="inactive">${monthlastdate - i + 1}</li>`;
+        lit += `<li class="inactive">${monthlastdate - i + 1}</li>`;
     }
 
     // Loop to add the dates of the current month
     for (let i = 1; i <= lastdate; i++) {
-
         // Check if the current date is today
         let isToday = i === date.getDate()
             && month === new Date().getMonth()
             && year === new Date().getFullYear()
             ? "active"
             : "";
-        lit += `<li class="${isToday}">${i}</li>`;
+            
+        // Comprobar si la fecha tiene eventos
+        let dayI = i < 10 ? `0${i}` : i;
+
+        let listItem = `<li class="${isToday}" id="day-${year}-${month + 1}-${dayI}">${i}`;
+
+        // Consultar eventos para la fecha actual
+        dailyEvents(`${year}-${month + 1}-${dayI}`)
+            .then(({ personalEvents }) => {
+                // Crear una variable para almacenar los eventos
+                let eventsHTML = "";
+
+                // Recorrer los eventos personales y agregar un <p> por evento
+                personalEvents.forEach(event => {
+                    eventsHTML += `<p class="event-title">${event.title}</p>`;
+                });
+
+                // Completar el contenido del <li> con los eventos
+                document.querySelector(`#day-${year}-${month + 1}-${dayI}`).innerHTML += eventsHTML;
+            })
+            .catch(error => {
+                console.error('Error:', error.message);
+            });
+
+        // Finalizar el <li> y agregarlo al calendario
+        lit += `${listItem}</li>`;
     }
 
     // Loop to add the first dates of the next month

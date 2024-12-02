@@ -2,11 +2,8 @@ import {closeMenu} from './calendar.js';
 
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
-document.getElementById('btn_add_contact').addEventListener('click', function () {
-    // Obtener los valores de los inputs
-    const username = document.getElementById('exampleInputUsername').value;
-    const email = document.getElementById('exampleInputEmail').value;
-
+// Obtener el id de un usuario a partir de su username y su email
+export function getUserId(username, email) {
     // Crear el objeto con los datos
     const data = {
         username: username,
@@ -14,7 +11,7 @@ document.getElementById('btn_add_contact').addEventListener('click', function ()
     };
 
     // Enviar los datos al endpoint
-    fetch('http://127.0.0.1:8000/api/get_user_id/', {
+    return fetch('http://127.0.0.1:8000/api/get_user_id/', {
         method: 'POST', 
         headers: {
             'Content-Type': 'application/json',
@@ -32,10 +29,35 @@ document.getElementById('btn_add_contact').addEventListener('click', function ()
         })
         .then(data => {
             // Redirigir al usuario
-            const contactData = {
-                contact: data.id
-            };
+            // console.log("ID")
+            // console.log(data)
+            // console.log(data.id)
+            // finalID = data.id
+            return data.id
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Hubo un error al obtener el ID de usuario');
+            throw error;
+        });
+}
 
+// Adicionar nuevo contacto
+document.getElementById('btn_add_contact').addEventListener('click', function () {
+    // Obtener los valores de los inputs
+    const username = document.getElementById('exampleInputUsername').value;
+    const email = document.getElementById('exampleInputEmail').value;
+    getUserId(username, email)
+        .then(id => {
+            console.log('ID final:', id);
+            const contactData = {
+                contact: id
+            }
+            console.log(username)
+            console.log(email)
+            console.log(id)
+        
+        
             fetch('http://127.0.0.1:8000/api/contacts/', {
                 method: 'POST', 
                 headers: {
@@ -62,9 +84,8 @@ document.getElementById('btn_add_contact').addEventListener('click', function ()
                 });
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Hubo un error al obtener el ID de usuario');
-        });
+            console.error('Error al obtener el ID', error)
+        })
 });
 
 // List Contacts
@@ -102,6 +123,10 @@ document.getElementById('list_contacts').addEventListener('click', function () {
                 const trashIcon = document.createElement('i');
                 trashIcon.className = 'fas fa-trash-alt';
                 trashIcon.style.paddingLeft = '5px'; // Espacio entre el nombre y el ícono
+                trashIcon.addEventListener('click', function () {
+                    console.log('Borro')
+                    deleteGroupFunction(contact.id)
+                })
 
                 // Agregar el ícono al elemento de lista
                 listItem.appendChild(trashIcon);
@@ -116,3 +141,36 @@ document.getElementById('list_contacts').addEventListener('click', function () {
             alert('Hubo un error al obtener los contactos');
         });
 });
+
+function deleteGroupFunction(contactId) {
+    fetch(`http://127.0.0.1:8000/api/contacts/${contactId}/delete/`, {
+        method: 'DELETE', 
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`,
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(`Error al eliminar contacto: ${err.detail || err}`);
+                });
+            }
+            // Verificar si hay contenido en la respuesta antes de procesarla
+            if (response.status !== 204) { // 204 significa No Content
+                return response.json();
+            }
+            return null; // No hay contenido para procesar
+        })
+        .then(data => {
+            // Redirigir al usuario
+            if (data) {
+                console.log('Respuesta del servidor:', data);
+            }
+            closeMenu()
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Hubo un error al eliminar contacto');
+        });
+}

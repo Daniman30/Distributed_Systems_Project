@@ -17,26 +17,27 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path,re_path
-from agenda.views import Register, Contact,Group,Group_membership,Event,views,Agenda
+from agenda.views import Register, Contact,Group,Group_membership,Event,views,Agenda,User
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('login/', Register.log_in, name='login'),
-    path('register/', Register.sign_up, name='register'),
+    path('login/', views.login, name='login'),
+    path('register/', views.register, name='register'),
     path('forgot/', views.forgot, name='forgot'),
-   
+    path('get_user_id/', User.GetUserIdView.as_view(), name='get_user_id'),
     re_path("test_token", Register.test_token),
     path('contacts/', Contact.ContactListCreateView.as_view(), name='contacts'),
     path('groups/', Group.GroupListCreateView.as_view(), name='groups'),
     path('groups/add-member/', Group_membership.AddMemberView.as_view(), name='add-member'),
-    path('groups/<int:group_id>/delete/', Group.DeleteGroupView.as_view(), name='delete-group'),
     path('groups/<int:group_id>/remove-member/<int:user_id>/', Group_membership.RemoveMemberView.as_view(), name='remove-member'),
+    path('groups/<int:group_id>/delete/', Group.DeleteGroupView.as_view(), name='delete-group'),
     path('contacts/<int:contact_id>/delete/', Contact.DeleteContactView.as_view(), name='delete-contact'),
     path('groups/<int:group_id>/leave/', Group_membership.LeaveGroupView.as_view(), name='leave-group'),
-    path('events/<int:event_id>/accept/', Event.AcceptEventView.as_view(), name='accept-event'),
-    path('events/<int:event_id>/cancel/', Event.CancelEventView.as_view(), name='cancel-event'),
     path('events/', Event.EventListView.as_view(), name='list-events'),
     path('events/create/', Event.EventCreateView.as_view(), name='create-event'),
+    
+    path('events/<int:event_id>/accept/', Event.AcceptEventView.as_view(), name='accept-event'),
+    path('events/<int:event_id>/cancel/', Event.CancelEventView.as_view(), name='cancel-event'),
     path('events/pending/', Event.PendingEventsView.as_view(), name='pending-events'),
     path('agendas/', Agenda.AgendaView.as_view(), name='agendas'),
     path('groups/<int:group_id>/agendas/', Agenda.GroupMemberAgendaView.as_view(), name='group_member_agenda'),
