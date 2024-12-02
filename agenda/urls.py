@@ -35,10 +35,10 @@ urlpatterns = [
     path('groups/<int:group_id>/leave/', Group_membership.LeaveGroupView.as_view(), name='leave-group'),
     path('events/', Event.EventListView.as_view(), name='list-events'),
     path('events/create/', Event.EventCreateView.as_view(), name='create-event'),
-    
     path('events/<int:event_id>/accept/', Event.AcceptEventView.as_view(), name='accept-event'),
     path('events/<int:event_id>/cancel/', Event.CancelEventView.as_view(), name='cancel-event'),
     path('events/pending/', Event.PendingEventsView.as_view(), name='pending-events'),
+    
     path('agendas/', Agenda.AgendaView.as_view(), name='agendas'),
     path('groups/<int:group_id>/agendas/', Agenda.GroupMemberAgendaView.as_view(), name='group_member_agenda'),
 ]

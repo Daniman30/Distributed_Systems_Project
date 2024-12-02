@@ -190,9 +190,29 @@
 
             <!-- Event Details -->
             <div class="floating-menu" id="menu9">
-                <h1>Event Details</h1>
-                <ul class="get-list" id="event-details"></ul>
-                <button class="closeMenu">Close</button>
+                <h5 id="EventTitle">Event Details</h5>
+                <div>
+                    <p id="adminEvent"></p>
+                    <p id="idEvent"></p>
+                </div>
+                <p id="descriptionEvent"></p>
+                <div>
+                    <p id="startTimeEvent"></p>
+                    <p id="endTimeEvent"></p>
+                </div>
+                <div>
+                    <p id="privacyEvent"></p>
+                    <p id="groupIdEvent"></p>
+                </div>
+                <div>
+                    <p id="participantIdsEvent"></p>
+                    <p id="confirmedParticipantsEvent"></p>
+                </div>
+                <div>
+                    <button class="closeMenu">Close</button>
+                    <button class="closeMenu" id="acceptBtn">Accept</button>
+                    <button class="closeMenu" id="declineBtn">Decline</button>
+                </div>
             </div>
 
             <!-- Divider -->
@@ -309,7 +329,7 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">3+</span>
+                                <span class="badge badge-danger badge-counter" id="CountEventsPending">0+</span>
                             </a>
                             <!-- Dropdown - Alerts -->
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -317,8 +337,6 @@
                                 <h6 class="dropdown-header">
                                     Events Pending
                                 </h6>
-                                
-                                
                             </div>
                         </li>
 
