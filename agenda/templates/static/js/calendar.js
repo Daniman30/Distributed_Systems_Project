@@ -16,77 +16,68 @@ const months = [
 ];
 
 // Function to generate the calendar
-export const manipulate = () => {
+export const manipulate = async () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let dayone = new Date(year, month, 1).getDay();
+            let lastdate = new Date(year, month + 1, 0).getDate();
+            let dayend = new Date(year, month, lastdate).getDay();
+            let monthlastdate = new Date(year, month, 0).getDate();
+            let lit = "";
 
-    // Get the first day of the month
-    let dayone = new Date(year, month, 1).getDay();
+            // Agregar las fechas del mes anterior
+            for (let i = dayone; i > 0; i--) {
+                lit += `<li class="inactive">${monthlastdate - i + 1}</li>`;
+            }
 
-    // Get the last date of the month
-    let lastdate = new Date(year, month + 1, 0).getDate();
+            // Agregar las fechas del mes actual
+            let promises = []; // Array para almacenar las promesas de `dailyEvents`
+            for (let i = 1; i <= lastdate; i++) {
+                let isToday = i === date.getDate()
+                    && month === new Date().getMonth()
+                    && year === new Date().getFullYear()
+                    ? "active"
+                    : "";
 
-    // Get the day of the last date of the month
-    let dayend = new Date(year, month, lastdate).getDay();
+                let dayI = i < 10 ? `0${i}` : i;
+                let listItem = `<li class="${isToday}" id="day-${year}-${month + 1}-${dayI}">${i}`;
 
-    // Get the last date of the previous month
-    let monthlastdate = new Date(year, month, 0).getDate();
+                // Almacena las promesas de dailyEvents
+                promises.push(
+                    dailyEvents(`${year}-${month + 1}-${dayI}`).then(({ personalEvents }) => {
+                        let eventsHTML = "";
+                        personalEvents.forEach(event => {
+                            eventsHTML += `<p class="event-title">${event.title}</p>`;
+                        });
+                        document.querySelector(`#day-${year}-${month + 1}-${dayI}`).innerHTML += eventsHTML;
+                    }).catch(error => {
+                        console.error('Error:', error.message);
+                    })
+                );
 
-    // Variable to store the generated calendar HTML
-    let lit = "";
+                lit += `${listItem}</li>`;
+            }
 
-    // Loop to add the last dates of the previous month
-    for (let i = dayone; i > 0; i--) {
-        lit += `<li class="inactive">${monthlastdate - i + 1}</li>`;
-    }
+            // Agregar las fechas del próximo mes
+            for (let i = dayend; i < 6; i++) {
+                lit += `<li class="inactive">${i - dayend + 1}</li>`;
+            }
 
-    // Loop to add the dates of the current month
-    for (let i = 1; i <= lastdate; i++) {
-        // Check if the current date is today
-        let isToday = i === date.getDate()
-            && month === new Date().getMonth()
-            && year === new Date().getFullYear()
-            ? "active"
-            : "";
-            
-        // Comprobar si la fecha tiene eventos
-        let dayI = i < 10 ? `0${i}` : i;
+            currdate.innerText = `${months[month]} ${year}`;
+            day.innerHTML = lit;
 
-        let listItem = `<li class="${isToday}" id="day-${year}-${month + 1}-${dayI}">${i}`;
+            // Esperar a que todas las promesas de dailyEvents se resuelvan
+            await Promise.all(promises);
 
-        // Consultar eventos para la fecha actual
-        dailyEvents(`${year}-${month + 1}-${dayI}`)
-            .then(({ personalEvents }) => {
-                // Crear una variable para almacenar los eventos
-                let eventsHTML = "";
+            // Resolver la promesa principal
+            resolve();
+        } catch (error) {
+            console.error('Error en manipulate:', error);
+            reject(error);
+        }
+    });
+};
 
-                // Recorrer los eventos personales y agregar un <p> por evento
-                personalEvents.forEach(event => {
-                    eventsHTML += `<p class="event-title">${event.title}</p>`;
-                });
-
-                // Completar el contenido del <li> con los eventos
-                document.querySelector(`#day-${year}-${month + 1}-${dayI}`).innerHTML += eventsHTML;
-            })
-            .catch(error => {
-                console.error('Error:', error.message);
-            });
-
-        // Finalizar el <li> y agregarlo al calendario
-        lit += `${listItem}</li>`;
-    }
-
-    // Loop to add the first dates of the next month
-    for (let i = dayend; i < 6; i++) {
-        lit += `<li class="inactive">${i - dayend + 1}</li>`
-    }
-
-    // Update the text of the current date element 
-    // with the formatted current month and year
-    currdate.innerText = `${months[month]} ${year}`;
-
-    // update the HTML of the dates element 
-    // with the generated calendar
-    day.innerHTML = lit;
-}
 
 manipulate();
 
