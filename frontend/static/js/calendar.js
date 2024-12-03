@@ -1,4 +1,5 @@
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+var globalURL
 
 let date = new Date();
 let year = date.getFullYear();
@@ -45,12 +46,16 @@ export const manipulate = async () => {
 
                 // Solicitar eventos para el día actual
                 const dayString = `${year}-${month + 1}-${dayI}`;
+                console.log("dayString", dayString)
                 promises.push(
-                    dailyEvents(dayString).then(({ personalEvents }) => {
+                    dailyEvents(adjustDateByDays(dayString, 1)).then(({ personalEvents, groupEvents }) => {
                         const dayElement = document.querySelector(`#day-${year}-${month + 1}-${dayI}`);
                         if (dayElement) {
                             let eventsHTML = "";
                             personalEvents.forEach(event => {
+                                eventsHTML += `<p class="event-title">${event.title}</p>`;
+                            });
+                            groupEvents.forEach(event => {
                                 eventsHTML += `<p class="event-title">${event.title}</p>`;
                             });
                             dayElement.innerHTML += eventsHTML; // Añade los eventos sin reemplazar
@@ -158,8 +163,14 @@ export function closeMenu() {
 }
 
 // Listar eventos
-function dailyEvents(day) {
-    return fetch('http://127.0.0.1:8000/api/events/', {
+function dailyEvents(day, url) {
+    var urlFinal
+    if (url) {
+        urlFinal = url
+    } else {
+        urlFinal = 'http://127.0.0.1:8000/api/events/'
+    }
+    return fetch(urlFinal, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -211,10 +222,5 @@ function dailyEvents(day) {
 function adjustDateByDays(dateString, days) {
     const date = new Date(dateString);
     date.setDate(date.getDate() + days); // Sumar o restar días
-    const xd = date.toISOString().slice(0, 10);
-    console.log("posterior", xd)
-
-    const xdd = new Date(dateString).setDate(date.getDate() + days).toISOString().slice(0, 10)
-    return new Date(xdd)
-     xd  // Retornar solo la parte de la fecha
+    return date.toISOString().split('T')[0]; // Retornar solo la parte de la fecha
 }

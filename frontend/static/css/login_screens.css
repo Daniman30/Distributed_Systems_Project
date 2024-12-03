@@ -11360,23 +11360,40 @@
       flex-basis: calc(100% / 7);
       box-sizing: border-box;
       color: #414141;
+      background-color: #d5d5d5;
   }
 
-  .calendar-dates li:hover{
+  .calendar-body li:not(.weekday) {
+      min-height: 5rem;
+      border: 1px solid black;
+      border-top: none;
+  }
+
+  .weekday {
+      border: 1px solid black;
+      border-bottom: none;
+  }
+
+  .weekday:first-child {
+      border-top-left-radius: 0.35rem;
+  }
+
+  .weekday:last-child {
+      border-top-right-radius: 0.35rem;
+  }
+
+
+  /* .calendar-dates li:hover{
       width: calc(100% / 7);
       font-size: 1.0rem;
       color: #414141;
       background-color: #e4e1e1;
       z-index: 1;
-  }
+  } */
 
   .calendar-body .calendar-weekdays li {
       cursor: default;
       font-weight: 500;
-  }
-
-  .calendar-body .calendar-dates li {
-      cursor: pointer;
   }
 
   .calendar-dates li.inactive {
@@ -11756,7 +11773,6 @@
     text-align: left;
     margin-bottom: 1rem;
     border-radius: 10%;
-    cursor: move;
 }
 
   .get-list li i:hover,
@@ -11798,3 +11814,17 @@
     color: #f8f9fc;
   }
   
+  .event-title {
+    color: rgba(255, 255, 255, 0.8);
+    background-color: #4e73df;
+    border-radius: 5%;
+    margin: 0.25rem;
+  }
+  
+  .event-title:hover {
+    color: rgba(255, 255, 255, 1);
+    background-color: #4e63df;
+    border-radius: 5%;
+    margin: 0.25rem;
+    cursor: pointer;
+  }

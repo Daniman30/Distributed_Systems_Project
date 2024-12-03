@@ -2,6 +2,7 @@ import {closeMenu} from './calendar.js';
 import {getUserId} from './contacts.js';
 
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+window.globalVariable = 'Valor inicial';
 
 // Variables globales
 const overlay2 = document.getElementById('overlay2');
@@ -163,24 +164,43 @@ function openGroupInfoMenu(group) {
         memberList.textContent = `Member: ${searchId(member)}`;
         membersList.appendChild(memberList)
 
+        // Icono agenda miembro
+        const agendaIconMember = document.createElement('i');
+        agendaIconMember.className = 'fas fa-calendar-alt';
+        agendaIconMember.style.paddingLeft = '10px';
+        agendaIconMember.style.paddingRight = '10px';
+        agendaIconMember.addEventListener('click', function () {
+            agendaMember(group.id)
+        })
+
         // Icono borrar miembro
         const deleteMember = document.createElement('i');
         deleteMember.className = 'fas fa-trash-alt';
-        deleteMember.style.paddingLeft = '5px'; // Espacio entre el nombre y el ícono
+        deleteMember.style.paddingLeft = '10px'; // Espacio entre el nombre y el ícono
         deleteMember.addEventListener('click', function () {
             console.log('group id: ', group.id)
             console.log('member id: ', member)
             deleteMemberFunction(group.id, member); // Llamar a la función para abrir el menú flotante
         });
+        memberList.appendChild(agendaIconMember)
         memberList.appendChild(deleteMember)
     })
 
     // Icono borrar grupo
     const trashIcon = document.createElement('i');
     trashIcon.className = 'fas fa-trash-alt';
-    trashIcon.style.paddingLeft = '5px'; // Espacio entre el nombre y el ícono
+    trashIcon.style.paddingLeft = '10px'; // Espacio entre el nombre y el ícono
     trashIcon.addEventListener('click', function () {
         deleteGroupFunction(group.id)
+    })
+
+    // Icono agenda grupo
+    const agendaIcon = document.createElement('i');
+    agendaIcon.className = 'fas fa-calendar-alt';
+    agendaIcon.style.paddingLeft = '10px';
+    agendaIcon.style.paddingRight = '10px';
+    agendaIcon.addEventListener('click', function () {
+        agendaGroup(group.id)
     })
 
     // Div para los iconos inferiores
@@ -220,6 +240,7 @@ function openGroupInfoMenu(group) {
     closeBtn.textContent = 'Close'
 
     menu.appendChild(nameItem)
+    nameItem.appendChild(agendaIcon)
     nameItem.appendChild(trashIcon)
     menu.appendChild(admin)
     menu.appendChild(description)
@@ -478,5 +499,59 @@ function leaveGroupFunction(groupId) {
         .catch(error => {
             console.error('Error:', error);
             alert('Hubo un error al abandonar grupo');
+        });
+}
+
+function agendaGroup(groupID) {
+    fetch(`http://127.0.0.1:8000/api/groups/${groupID}/agendas`, {
+        method: 'GET', 
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`,
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(`Error al consultar la agenda: ${err.detail || err}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Redirigir al usuario
+            closeMenu()
+            closeMenu2()
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Hubo un error al consultar la agenda');
+        });
+}
+
+function agendaMember() {
+    fetch(`http://127.0.0.1:8000/api//agendas`, {
+        method: 'GET', 
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`,
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(`Error al consultar la agenda: ${err.detail || err}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Redirigir al usuario
+            closeMenu()
+            closeMenu2()
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Hubo un error al consultar la agenda');
         });
 }
