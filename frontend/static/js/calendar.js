@@ -1,4 +1,5 @@
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+var globalURL
 
 let date = new Date();
 let year = date.getFullYear();
@@ -47,11 +48,14 @@ export const manipulate = async () => {
                 const dayString = `${year}-${month + 1}-${dayI}`;
                 console.log("dayString", dayString)
                 promises.push(
-                    dailyEvents(adjustDateByDays(dayString, 1)).then(({ personalEvents }) => {
+                    dailyEvents(adjustDateByDays(dayString, 1)).then(({ personalEvents, groupEvents }) => {
                         const dayElement = document.querySelector(`#day-${year}-${month + 1}-${dayI}`);
                         if (dayElement) {
                             let eventsHTML = "";
                             personalEvents.forEach(event => {
+                                eventsHTML += `<p class="event-title">${event.title}</p>`;
+                            });
+                            groupEvents.forEach(event => {
                                 eventsHTML += `<p class="event-title">${event.title}</p>`;
                             });
                             dayElement.innerHTML += eventsHTML; // Añade los eventos sin reemplazar
@@ -159,8 +163,14 @@ export function closeMenu() {
 }
 
 // Listar eventos
-function dailyEvents(day) {
-    return fetch('http://127.0.0.1:8000/api/events/', {
+function dailyEvents(day, url) {
+    var urlFinal
+    if (url) {
+        urlFinal = url
+    } else {
+        urlFinal = 'http://127.0.0.1:8000/api/events/'
+    }
+    return fetch(urlFinal, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
