@@ -1,0 +1,220 @@
+const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+
+let date = new Date();
+let year = date.getFullYear();
+let month = date.getMonth();
+
+const day = document.querySelector(".calendar-dates");
+const currdate = document.querySelector(".calendar-current-date");
+const prenexIcons = document.querySelectorAll(".calendar-navigation");
+
+// Array of month names
+const months = [
+    "January", "February", "March", "April", "May",
+    "June", "July", "August", "September", "October",
+    "November", "December"
+];
+
+// Function to generate the calendar
+export const manipulate = async () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let dayone = new Date(year, month, 1).getDay();
+            let lastdate = new Date(year, month + 1, 0).getDate();
+            let dayend = new Date(year, month, lastdate).getDay();
+            let monthlastdate = new Date(year, month, 0).getDate();
+            let lit = "";
+
+            // Agregar las fechas del mes anterior
+            for (let i = dayone; i > 0; i--) {
+                lit += `<li class="inactive">${monthlastdate - i + 1}</li>`;
+            }
+
+            // Agregar las fechas del mes actual
+            let promises = [];
+            for (let i = 1; i <= lastdate; i++) {
+                let isToday = i === date.getDate()
+                    && month === new Date().getMonth()
+                    && year === new Date().getFullYear()
+                    ? "active"
+                    : "";
+
+                let dayI = i < 10 ? `0${i}` : i;
+                let listItem = `<li class="${isToday}" id="day-${year}-${month + 1}-${dayI}">${i}</li>`;
+                lit += listItem;
+
+                // Solicitar eventos para el día actual
+                const dayString = `${year}-${month + 1}-${dayI}`;
+                promises.push(
+                    dailyEvents(dayString).then(({ personalEvents }) => {
+                        const dayElement = document.querySelector(`#day-${year}-${month + 1}-${dayI}`);
+                        if (dayElement) {
+                            let eventsHTML = "";
+                            personalEvents.forEach(event => {
+                                eventsHTML += `<p class="event-title">${event.title}</p>`;
+                            });
+                            dayElement.innerHTML += eventsHTML; // Añade los eventos sin reemplazar
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error.message);
+                    })
+                );
+            }
+
+            // Agregar las fechas del próximo mes
+            for (let i = dayend; i < 6; i++) {
+                lit += `<li class="inactive">${i - dayend + 1}</li>`;
+            }
+
+            currdate.innerText = `${months[month]} ${year}`;
+            day.innerHTML = lit;
+
+            // Esperar a que todas las promesas se resuelvan
+            await Promise.all(promises);
+
+            resolve();
+        } catch (error) {
+            console.error('Error en manipulate:', error);
+            reject(error);
+        }
+    });
+};
+
+
+
+manipulate();
+
+// Attach a click event listener to each icon
+prenexIcons.forEach(icon => {
+
+    // When an icon is clicked
+    icon.addEventListener("click", () => {
+
+        // Check if the icon is "calendar-prev"
+        // or "calendar-next"
+        month = icon.id === "calendar-prev" ? month - 1 : month + 1;
+
+        // Check if the month is out of range
+        if (month < 0 || month > 11) {
+
+            // Set the date to the first day of the 
+            // month with the new year
+            date = new Date(year, month, new Date().getDate());
+
+            // Set the year to the new year
+            year = date.getFullYear();
+
+            // Set the month to the new month
+            month = date.getMonth();
+        }
+
+        else {
+
+            // Set the date to the current date
+            date = new Date();
+        }
+
+        // Call the manipulate function to 
+        // update the calendar display
+        manipulate();
+    });
+});
+
+// Variables globales
+const overlay = document.getElementById('overlay');
+let activeMenu = null; // Para rastrear qué menú está activo
+
+// Evento para abrir menús flotantes
+document.querySelectorAll('.openMenu').forEach(button => {
+    button.addEventListener('click', function (event) {
+        event.preventDefault(); // Previene el comportamiento predeterminado del enlace
+
+        // Identifica el menú a abrir
+        const menuId = this.getAttribute('data-menu');
+        const menu = document.getElementById(menuId);
+
+        // Muestra el overlay y el menú flotante correspondiente
+        if (menu) {
+            overlay.style.display = 'flex';
+            menu.style.display = 'flex';
+            activeMenu = menu; // Guarda el menú activo
+        }
+    });
+});
+
+// Evento para cerrar menús
+overlay.addEventListener('click', closeMenu);
+document.querySelectorAll('.closeMenu').forEach(button => {
+    button.addEventListener('click', closeMenu);
+});
+
+// Función para cerrar el menú flotante activo
+export function closeMenu() {
+    if (activeMenu) {
+        activeMenu.style.display = 'none';
+        overlay.style.display = 'none';
+        activeMenu = null; // Reinicia el menú activo
+    }
+}
+
+// Listar eventos
+function dailyEvents(day) {
+    return fetch('http://127.0.0.1:8000/api/events/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`, // Token para autenticación
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(`Error al obtener eventos: ${err.detail || err}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            const targetDate = new Date(`${day}T00:00:00Z`); // Forzar formato UTC
+
+            const personalEvents = data.personal_events.filter(event => {
+                const start = new Date(event.start_time);
+                const end = new Date(event.end_time);
+
+                // Comparar fechas solo en UTC
+                const normalizedTarget = Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+                const normalizedStart = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+                const normalizedEnd = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+
+                return normalizedTarget >= normalizedStart && normalizedTarget <= normalizedEnd;
+            });
+
+            const groupEvents = data.group_events.filter(event => {
+                const start = new Date(event.start_time);
+                const end = new Date(event.end_time);
+
+                const normalizedTarget = Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+                const normalizedStart = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+                const normalizedEnd = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+
+                return normalizedTarget >= normalizedStart && normalizedTarget <= normalizedEnd;
+            });
+
+            return { personalEvents, groupEvents };
+        })
+        .catch(error => {
+            console.error('Error:', error.message);
+            alert('Hubo un error al obtener los eventos');
+        });
+}
+
+function adjustDateByDays(dateString, days) {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + days); // Sumar o restar días
+    const xd = date.toISOString().slice(0, 10);
+    console.log("posterior", xd)
+
+    const xdd = new Date(dateString).setDate(date.getDate() + days).toISOString().slice(0, 10)
+    return new Date(xdd)
+     xd  // Retornar solo la parte de la fecha
+}

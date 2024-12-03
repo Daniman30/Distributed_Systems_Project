@@ -2953,9 +2953,9 @@
     width: 100%;
   }
   
-  .btn-block + .btn-block {
+  /* .btn-block + .btn-block {
     margin-top: 0.5rem;
-  }
+  } */
   
   input[type="submit"].btn-block,
   input[type="reset"].btn-block,
@@ -11772,3 +11772,29 @@
   #icon {
     color: #d4ddf6;
   }
+
+  .row_elements {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .checkboxPrivacy {
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: #f8f9fc;
+  }
+
+  #btn_create_event {
+    margin-bottom: 0.5rem;
+  }
+
+  #EventDescription {
+    margin-top: 0.5rem;
+  }
+
+  #text {
+    color: #f8f9fc;
+  }
+  
