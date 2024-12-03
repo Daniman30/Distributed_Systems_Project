@@ -1,5 +1,5 @@
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-var globalURL
+window.globalVariable = ""
 
 let date = new Date();
 let year = date.getFullYear();
@@ -18,6 +18,7 @@ const months = [
 
 // Function to generate the calendar
 export const manipulate = async () => {
+    console.log("global var:", window.globalVariable)
     return new Promise(async (resolve, reject) => {
         try {
             let dayone = new Date(year, month, 1).getDay();
@@ -48,7 +49,7 @@ export const manipulate = async () => {
                 const dayString = `${year}-${month + 1}-${dayI}`;
                 console.log("dayString", dayString)
                 promises.push(
-                    dailyEvents(adjustDateByDays(dayString, 1)).then(({ personalEvents, groupEvents }) => {
+                    dailyEvents(adjustDateByDays(dayString, 1), window.globalVariable).then(({ personalEvents, groupEvents }) => {
                         const dayElement = document.querySelector(`#day-${year}-${month + 1}-${dayI}`);
                         if (dayElement) {
                             let eventsHTML = "";
@@ -163,10 +164,12 @@ export function closeMenu() {
 }
 
 // Listar eventos
-function dailyEvents(day, url) {
+export function dailyEvents(day, url) {
     var urlFinal
     if (url) {
-        urlFinal = url
+        if (url !== "") {
+            urlFinal = `http://127.0.0.1:8000/api/events/${url}`
+        }
     } else {
         urlFinal = 'http://127.0.0.1:8000/api/events/'
     }
@@ -219,8 +222,17 @@ function dailyEvents(day, url) {
         });
 }
 
-function adjustDateByDays(dateString, days) {
+export function adjustDateByDays(dateString, days) {
     const date = new Date(dateString);
     date.setDate(date.getDate() + days); // Sumar o restar días
     return date.toISOString().split('T')[0]; // Retornar solo la parte de la fecha
 }
+
+document.getElementById('logoutBtn').addEventListener('click', function () {
+    // Eliminar los datos del usuario del almacenamiento
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('userData');
+
+})

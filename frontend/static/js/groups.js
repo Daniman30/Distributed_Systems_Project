@@ -1,8 +1,19 @@
 import {closeMenu} from './calendar.js';
 import {getUserId} from './contacts.js';
+import {adjustDateByDays} from './calendar.js';
+import {manipulate} from './calendar.js';
 
-const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-window.globalVariable = 'Valor inicial';
+const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+
+if (userData) {
+    // Convertir los datos del formato JSON a un objeto JavaScript
+    const user = JSON.parse(userData);
+    console.log('Usuario registrado:', user);
+} else {
+    console.log('No hay usuario registrado.');
+}
+
+window.globalVariable = '';
 
 // Variables globales
 const overlay2 = document.getElementById('overlay2');
@@ -170,7 +181,12 @@ function openGroupInfoMenu(group) {
         agendaIconMember.style.paddingLeft = '10px';
         agendaIconMember.style.paddingRight = '10px';
         agendaIconMember.addEventListener('click', function () {
-            agendaMember(group.id)
+            const date = agendaGroup();
+            window.globalVariable = date;
+            manipulate();
+            window.globalVariable = "";
+            closeMenu2();
+            closeMenu();
         })
 
         // Icono borrar miembro
@@ -200,7 +216,12 @@ function openGroupInfoMenu(group) {
     agendaIcon.style.paddingLeft = '10px';
     agendaIcon.style.paddingRight = '10px';
     agendaIcon.addEventListener('click', function () {
-        agendaGroup(group.id)
+        const date = agendaGroup(group.id);
+        window.globalVariable = date;
+        manipulate();
+        window.globalVariable = "";
+        closeMenu2();
+        closeMenu();
     })
 
     // Div para los iconos inferiores
@@ -502,7 +523,8 @@ function leaveGroupFunction(groupId) {
         });
 }
 
-function agendaGroup(groupID) {
+function agendaGroup1(groupID) {
+    
     fetch(`http://127.0.0.1:8000/api/groups/${groupID}/agendas`, {
         method: 'GET', 
         headers: {
@@ -529,8 +551,8 @@ function agendaGroup(groupID) {
         });
 }
 
-function agendaMember() {
-    fetch(`http://127.0.0.1:8000/api//agendas`, {
+function agendaMember1() {
+    fetch(`http://127.0.0.1:8000/api/agendas`, {
         method: 'GET', 
         headers: {
             'Content-Type': 'application/json',
@@ -554,4 +576,22 @@ function agendaMember() {
             console.error('Error:', error);
             alert('Hubo un error al consultar la agenda');
         });
+}
+
+function agendaGroup(groupID) {
+    let date = new Date();
+    let day = date.getDate();
+    let year = date.getFullYear();
+    let month = date.getMonth();
+    const dayString = `${year}-${month + 1}-${day}`;
+    const initDate = adjustDateByDays(dayString, -100000);
+    const endDate = adjustDateByDays(dayString, 100000);
+
+    const returnDate = groupID ? `?start_date=${initDate}&end_date=${endDate}&group_id=${groupID}` : `?start_date=${initDate}&end_date=${endDate}`;
+    return returnDate;
+}
+
+function agendaMember() {
+    // const initDate = new Date()
+    // console.log(initDate)
 }

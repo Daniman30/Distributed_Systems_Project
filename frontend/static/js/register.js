@@ -52,3 +52,4 @@ document.getElementById('btn').addEventListener('click', function () {
             alert('Hubo un error al registrar la cuenta');
         });
 });
+
