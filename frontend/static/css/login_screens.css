@@ -11798,3 +11798,9 @@
     color: #f8f9fc;
   }
   
+  .event-title {
+    color: rgba(255, 255, 255, 0.8);
+    background-color: #4e73df;
+    border-radius: 5%;
+    margin: 0.25rem;
+  }

@@ -45,8 +45,9 @@ export const manipulate = async () => {
 
                 // Solicitar eventos para el día actual
                 const dayString = `${year}-${month + 1}-${dayI}`;
+                console.log("dayString", dayString)
                 promises.push(
-                    dailyEvents(dayString).then(({ personalEvents }) => {
+                    dailyEvents(adjustDateByDays(dayString, 1)).then(({ personalEvents }) => {
                         const dayElement = document.querySelector(`#day-${year}-${month + 1}-${dayI}`);
                         if (dayElement) {
                             let eventsHTML = "";
@@ -211,10 +212,5 @@ function dailyEvents(day) {
 function adjustDateByDays(dateString, days) {
     const date = new Date(dateString);
     date.setDate(date.getDate() + days); // Sumar o restar días
-    const xd = date.toISOString().slice(0, 10);
-    console.log("posterior", xd)
-
-    const xdd = new Date(dateString).setDate(date.getDate() + days).toISOString().slice(0, 10)
-    return new Date(xdd)
-     xd  // Retornar solo la parte de la fecha
+    return date.toISOString().split('T')[0]; // Retornar solo la parte de la fecha
 }
