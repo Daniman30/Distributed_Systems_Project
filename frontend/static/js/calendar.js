@@ -1,4 +1,4 @@
-import { dailyEvents } from "./event.js";
+const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
 let date = new Date();
 let year = date.getFullYear();
@@ -31,7 +31,7 @@ export const manipulate = async () => {
             }
 
             // Agregar las fechas del mes actual
-            let promises = []; // Array para almacenar las promesas de `dailyEvents`
+            let promises = [];
             for (let i = 1; i <= lastdate; i++) {
                 let isToday = i === date.getDate()
                     && month === new Date().getMonth()
@@ -40,22 +40,25 @@ export const manipulate = async () => {
                     : "";
 
                 let dayI = i < 10 ? `0${i}` : i;
-                let listItem = `<li class="${isToday}" id="day-${year}-${month + 1}-${dayI}">${i}`;
+                let listItem = `<li class="${isToday}" id="day-${year}-${month + 1}-${dayI}">${i}</li>`;
+                lit += listItem;
 
-                // Almacena las promesas de dailyEvents
+                // Solicitar eventos para el día actual
+                const dayString = `${year}-${month + 1}-${dayI}`;
                 promises.push(
-                    dailyEvents(`${year}-${month + 1}-${dayI}`).then(({ personalEvents }) => {
-                        let eventsHTML = "";
-                        personalEvents.forEach(event => {
-                            eventsHTML += `<p class="event-title">${event.title}</p>`;
-                        });
-                        document.querySelector(`#day-${year}-${month + 1}-${dayI}`).innerHTML += eventsHTML;
+                    dailyEvents(dayString).then(({ personalEvents }) => {
+                        const dayElement = document.querySelector(`#day-${year}-${month + 1}-${dayI}`);
+                        if (dayElement) {
+                            let eventsHTML = "";
+                            personalEvents.forEach(event => {
+                                eventsHTML += `<p class="event-title">${event.title}</p>`;
+                            });
+                            dayElement.innerHTML += eventsHTML; // Añade los eventos sin reemplazar
+                        }
                     }).catch(error => {
                         console.error('Error:', error.message);
                     })
                 );
-
-                lit += `${listItem}</li>`;
             }
 
             // Agregar las fechas del próximo mes
@@ -66,10 +69,9 @@ export const manipulate = async () => {
             currdate.innerText = `${months[month]} ${year}`;
             day.innerHTML = lit;
 
-            // Esperar a que todas las promesas de dailyEvents se resuelvan
+            // Esperar a que todas las promesas se resuelvan
             await Promise.all(promises);
 
-            // Resolver la promesa principal
             resolve();
         } catch (error) {
             console.error('Error en manipulate:', error);
@@ -77,6 +79,7 @@ export const manipulate = async () => {
         }
     });
 };
+
 
 
 manipulate();
@@ -152,4 +155,66 @@ export function closeMenu() {
         overlay.style.display = 'none';
         activeMenu = null; // Reinicia el menú activo
     }
+}
+
+// Listar eventos
+function dailyEvents(day) {
+    return fetch('http://127.0.0.1:8000/api/events/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`, // Token para autenticación
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(`Error al obtener eventos: ${err.detail || err}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            const targetDate = new Date(`${day}T00:00:00Z`); // Forzar formato UTC
+
+            const personalEvents = data.personal_events.filter(event => {
+                const start = new Date(event.start_time);
+                const end = new Date(event.end_time);
+
+                // Comparar fechas solo en UTC
+                const normalizedTarget = Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+                const normalizedStart = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+                const normalizedEnd = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+
+                return normalizedTarget >= normalizedStart && normalizedTarget <= normalizedEnd;
+            });
+
+            const groupEvents = data.group_events.filter(event => {
+                const start = new Date(event.start_time);
+                const end = new Date(event.end_time);
+
+                const normalizedTarget = Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+                const normalizedStart = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+                const normalizedEnd = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+
+                return normalizedTarget >= normalizedStart && normalizedTarget <= normalizedEnd;
+            });
+
+            return { personalEvents, groupEvents };
+        })
+        .catch(error => {
+            console.error('Error:', error.message);
+            alert('Hubo un error al obtener los eventos');
+        });
+}
+
+function adjustDateByDays(dateString, days) {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + days); // Sumar o restar días
+    const xd = date.toISOString().slice(0, 10);
+    console.log("posterior", xd)
+
+    const xdd = new Date(dateString).setDate(date.getDate() + days).toISOString().slice(0, 10)
+    return new Date(xdd)
+     xd  // Retornar solo la parte de la fecha
 }

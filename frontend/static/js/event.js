@@ -69,41 +69,7 @@ document.getElementById('btn_create_event').addEventListener('click', async func
 });
 
 
-// Listar eventos
-export function dailyEvents(day) {
-    // Realizar la solicitud GET al endpoint de eventos
-    return fetch('http://127.0.0.1:8000/api/events/', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token ${token}`, // Token para autenticación
-        },
-    })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(`Error al obtener eventos: ${err.detail || err}`);
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            const date_day = new Date(day).toLocaleDateString()
-            const personalEvents = data.personal_events.filter(event => 
-                date_day >= new Date(event.start_time).toLocaleDateString() && date_day <= new Date(event.end_time).toLocaleDateString()
-            );
 
-            const groupEvents = data.group_events.filter(event => 
-                date_day >= new Date(event.start_time).toLocaleDateString() && date_day <= new Date(event.end_time).toLocaleDateString()
-            );
-            return { personalEvents, groupEvents };
-        })
-        .catch(error => {
-            // Manejar errores
-            console.error('Error:', error.message);
-            alert('Hubo un error al obtener los eventos');
-        });
-};
 
 // View Event
 async function viewEvent(idEvent) {
