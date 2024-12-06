@@ -1,6 +1,9 @@
 # Imagen base de Python
 FROM python:3.9-slim
 
+# Instalar ping
+RUN apt-get update && apt-get install -y inetutils-ping
+
 # Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
@@ -12,6 +15,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar el código del proyecto al contenedor
 COPY . /app/
+
+# Configurar Django para generar archivos estáticos
+RUN python manage.py collectstatic --noinput
 
 # Establecer las variables de entorno para evitar problemas con la configuración de Django
 ENV PYTHONUNBUFFERED 1

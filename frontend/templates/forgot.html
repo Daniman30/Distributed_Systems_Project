@@ -12,15 +12,16 @@
     <title>Calendar - Forgot Password</title>
 
     <!-- Custom fonts for this template-->
-    <link href="../static/css/fonts.css" rel="stylesheet" type="text/css">
+    <link href="../staticfiles/css/fonts.css" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
     <!-- Custom styles for this template-->
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/login_screens.css' %}">
-
+    <!-- {% load staticfiles %}
+    <link rel="stylesheet" href="{% staticfiles 'css/login_screens.css' %}"> -->
+    <link href="../staticfiles/css/login_screens.css" rel="stylesheet">
+    
 </head>
 
 <body class="bg-gradient-primary">
@@ -50,16 +51,16 @@
                                                 id="exampleInputEmail" aria-describedby="emailHelp"
                                                 placeholder="Enter Email Address...">
                                         </div>
-                                        <a href="../" class="btn btn-primary btn-user btn-block">
+                                        <a href="/templates/index.html" class="btn btn-primary btn-user btn-block">
                                             Reset Password
                                         </a>
                                     </form>
                                     <hr>
                                     <div class="text-center">
-                                        <a class="small" href="../register/">Create an Account!</a>
+                                        <a class="small" href="/templates/register.html">Create an Account!</a>
                                     </div>
                                     <div class="text-center">
-                                        <a class="small" href="../login/">Already have an account? Login!</a>
+                                        <a class="small" href="/templates/login.html">Already have an account? Login!</a>
                                     </div>
                                 </div>
                             </div>
@@ -74,14 +75,14 @@
     </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="../static/js/jquery.js"></script>
-    <script src="../static/js/bootstrap.bundle.js"></script>
+    <script src="../staticfiles/js/jquery.js"></script>
+    <script src="../staticfiles/js/bootstrap.bundle.js"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="../static/js/jquery.easing.js"></script>
+    <script src="../staticfiles/js/jquery.easing.js"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="../static/js/login_screens.js"></script>
+    <script src="../staticfiles/js/login_screens.js"></script>
 
 </body>
 

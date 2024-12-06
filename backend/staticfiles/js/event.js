@@ -2,6 +2,8 @@
 import {manipulate} from './calendar.js';
 
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+const user = JSON.parse(userData);
 
 // Variables globales
 const overlay = document.getElementById('overlay');
@@ -21,9 +23,9 @@ document.getElementById('btn_create_event').addEventListener('click', async func
     const eventPrivacyCheck = document.getElementById('checkPrivacy').checked;
     const eventPrivacy = eventPrivacyCheck ? 'private' : 'public';
     const groupEvent = document.getElementById('EventGroup').value;
-    const participantsEvent = document.getElementById('EventParticipants').value;
+    const participantsEvent = `${document.getElementById('EventParticipants').value}, ${user.id}`;
 
-    const numbers = participantsEvent 
+    const numbers = participantsEvent
     ? participantsEvent.split(',').map(num => parseFloat(num.trim())).filter(num => !isNaN(num)) 
     : [];
 
@@ -38,8 +40,7 @@ document.getElementById('btn_create_event').addEventListener('click', async func
     };
 
     const dataF = Object.fromEntries(Object.entries(rawData).filter(([_, value]) => value !== null));
-
-    console.log(dataF)
+    console.log("userdata", user)
 
     try {
         // Enviar los datos al endpoint
@@ -62,14 +63,12 @@ document.getElementById('btn_create_event').addEventListener('click', async func
         // Llama a manipulate y espera a que se complete
         await manipulate();
         closeMenu();
+
     } catch (error) {
         console.error('Error:', error);
         alert('Hubo un error al procesar la solicitud.');
     }
 });
-
-
-
 
 // View Event
 async function viewEvent(idEvent) {
@@ -252,10 +251,6 @@ function formatToReadableDate(dateStr) {
     return `${day}/${month}/${year}`;
 }
 
-document.querySelectorAll('.Aelement').forEach(littleEvent => {
-    littleEvent
-});
-
 function closeMenu() {
     if (activeMenu) {
         activeMenu.style.display = 'none';
@@ -284,6 +279,7 @@ document.getElementById('acceptBtn').addEventListener('click', function () {
         })
         .then(data => {
             console.log(data)
+            manipulate()
             closeMenu()
         })
         .catch(error => {
@@ -295,7 +291,7 @@ document.getElementById('acceptBtn').addEventListener('click', function () {
 
 document.getElementById('declineBtn').addEventListener('click', function () {
     const idEventUrl =  document.getElementById('idEvent')
-    console.log(idEventUrl.textContent)
+    console.log("Evento a cancelar", idEventUrl.textContent)
     fetch(`http://127.0.0.1:8000/api/events/${idEventUrl.textContent}/cancel/`, {
         method: 'DELETE',
         headers: {
@@ -321,4 +317,8 @@ document.getElementById('declineBtn').addEventListener('click', function () {
             console.error('Error:', error.message);
             alert('Hubo un error al rechazar el evento');
         });
+});
+
+document.getElementsByClassName("event-title").addEventListener('click', function() {
+
 });

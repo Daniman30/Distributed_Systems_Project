@@ -12,16 +12,17 @@
     <title>Calendar</title>
 
     <!-- Custom fonts for this template-->
-    <link href="../static/css/fonts.css" rel="stylesheet" type="text/css">
+    <link href="../staticfiles/css/fonts.css" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template-->
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/login_screens.css' %}">
-    <link rel="stylesheet" href="{% static 'css/fonts.css' %}" type="text/css">
+    <!-- {% load staticfiles %}
+    <link rel="stylesheet" href="{% staticfiles 'css/login_screens.css' %}">
+    <link rel="stylesheet" href="{% staticfiles 'css/fonts.css' %}" type="text/css"> -->
+    <link href="../staticfiles/css/login_screens.css" rel="stylesheet">
     
 </head>
 
@@ -34,11 +35,11 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/api/">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/templates/index.html">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-calendar-alt"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">CALENDAR</div>
+                <div class="sidebar-brand-text mx-3">CALENDAR123</div>
             </a>
 
             <!-- Divider -->
@@ -346,9 +347,9 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"></span>
                                 <img class="img-profile rounded-circle"
-                                    src="../static/img/img/undraw_profile.svg">
+                                    src="../staticfiles/img/img/undraw_profile.svg">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -390,14 +391,6 @@
                     </ul>
                     <ul class="calendar-dates">
                     </ul>
-                    <ul class="calendar-dates">
-                    </ul>
-                    <ul class="calendar-dates">
-                    </ul>
-                    <ul class="calendar-dates">
-                    </ul>
-                    <ul class="calendar-dates">
-                    </ul>
                 </div>
             </div>
         </div>
@@ -425,34 +418,34 @@
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" id="logoutBtn" href="/api/login/">Logout</a>
+                    <a class="btn btn-primary" id="logoutBtn" href="/templates/index.html">Logout</a>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- Calendar -->
-    <script type="module" src="../static/js/calendar.js"></script>
-    <script type="module" src="../static/js/contacts.js"></script>
-    <script type="module" src="../static/js/groups.js"></script>
-    <script type="module" src="../static/js/event.js"></script>
+    <script type="module" src="../staticfiles/js/calendar.js"></script>
+    <script type="module" src="../staticfiles/js/contacts.js"></script>
+    <script type="module" src="../staticfiles/js/groups.js"></script>
+    <script type="module" src="../staticfiles/js/event.js"></script>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="../static/js/jquery.js"></script>
-    <script src="../static/js/bootstrap.bundle.js"></script>
+    <script src="../staticfiles/js/jquery.js"></script>
+    <script src="../staticfiles/js/bootstrap.bundle.js"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="../static/js/jquery.easing.js"></script>
+    <script src="../staticfiles/js/jquery.easing.js"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="../static/js/login_screens.js"></script>
+    <script src="../staticfiles/js/login_screens.js"></script>
 
     <!-- Page level plugins -->
-    <script src="../static/js/Chart.js"></script>
+    <script src="../staticfiles/js/Chart.js"></script>
 
     <!-- Page level custom scripts -->
-    <script src="../static/js/chart-area-demo.js"></script>
-    <script src="../static/js/chart-pie-demo.js"></script>
+    <script src="../staticfiles/js/chart-area-demo.js"></script>
+    <script src="../staticfiles/js/chart-pie-demo.js"></script>
 
     
 </body>

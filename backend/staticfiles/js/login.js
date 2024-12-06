@@ -1,26 +1,17 @@
 document.getElementById('btn').addEventListener('click', function () {
     // Obtener los valores de los inputs
     const username = document.getElementById('exampleInputUsername').value;
-    const email = document.getElementById('exampleInputEmail').value;
     const password = document.getElementById('exampleInputPassword').value;
-    const repeatPassword = document.getElementById('exampleRepeatPassword').value;
     const rememberMe = document.getElementById('customCheck').checked; // Verificar si está marcado el checkbox
-
-    // Validar que las contraseñas coincidan
-    if (password !== repeatPassword) {
-        alert('Las contraseñas no coinciden');
-        return;
-    }
 
     // Crear el objeto con los datos
     const data = {
         username: username,
-        email: email,
         password: password,
     };
 
     // Enviar los datos al endpoint
-    fetch('http://127.0.0.1:8000/sign_up/', {
+    fetch('http://127.0.0.1:8000/log_in/', {
         method: 'POST', 
         headers: {
             'Content-Type': 'application/json',
@@ -43,13 +34,12 @@ document.getElementById('btn').addEventListener('click', function () {
                 sessionStorage.setItem('authToken', data.token);
                 sessionStorage.setItem('userData', JSON.stringify(data.user));
             }
-
-            // Redirigir al usuario o realizar otra acción
-            window.location.href = '/api/';
+            
+            // Redirigir al usuario
+            window.location.href = '/templates/index.html';
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al registrar la cuenta');
+            alert('Hubo un error al iniciar sesion');
         });
 });
-

@@ -57,7 +57,7 @@ export const manipulate = async () => {
                                 eventsHTML += `<p class="event-title">${event.title}</p>`;
                             });
                             groupEvents.forEach(event => {
-                                eventsHTML += `<p class="event-title">${event.title}</p>`;
+                                eventsHTML += `<p class="event-title2">${event.title}</p>`;
                             });
                             dayElement.innerHTML += eventsHTML; // Añade los eventos sin reemplazar
                         }
@@ -189,30 +189,60 @@ export function dailyEvents(day, url) {
             return response.json();
         })
         .then(data => {
-            const targetDate = new Date(`${day}T00:00:00Z`); // Forzar formato UTC
+            const targetDate = new Date(fixHourZone(`${day}T00:00:00Z`, -19)); // Forzar formato UTC
+            const targetDateEnd = new Date(fixHourZone(`${day}T00:00:00Z`, 5));
+
+            console.log("groupEvents", data.group_events);
+            console.log()
+            
+            const groupEvents = data.group_events.filter(event => {
+                const start = new Date(fixHourZone(event.start_time, 5));
+                const end = new Date(fixHourZone(event.end_time, 5));
+
+                const initCalendarDay = dateToInt(targetDate);
+                const endCalendarDay = dateToInt(targetDateEnd);
+                const normalizedStart = dateToInt(start);
+                const normalizedEnd = dateToInt(end);
+
+                console.log("testing", start)
+                console.log("testing", end)
+                console.log("----------------------------")
+
+                // Empieza y termina antes
+                const case1 = (initCalendarDay >= normalizedStart && initCalendarDay >= normalizedEnd)
+
+                // Empieza y termina despues
+                const case2 = (endCalendarDay <= normalizedStart && endCalendarDay <= normalizedEnd)
+                
+                return !(case1 || case2)
+                // const start = new Date(event.start_time);
+                // const end = new Date(event.end_time);
+
+                // const normalizedTarget = Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+                // const normalizedStart = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+                // const normalizedEnd = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+
+                // return normalizedTarget >= normalizedStart && normalizedTarget <= normalizedEnd;
+            });
 
             const personalEvents = data.personal_events.filter(event => {
-                const start = new Date(event.start_time);
-                const end = new Date(event.end_time);
+                const start = new Date(fixHourZone(event.start_time, 5));
+                const end = new Date(fixHourZone(event.end_time, 5));
 
-                // Comparar fechas solo en UTC
-                const normalizedTarget = Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-                const normalizedStart = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
-                const normalizedEnd = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+                const initCalendarDay = dateToInt(targetDate);
+                const endCalendarDay = dateToInt(targetDateEnd);
+                const normalizedStart = dateToInt(start);
+                const normalizedEnd = dateToInt(end);
 
-                return normalizedTarget >= normalizedStart && normalizedTarget <= normalizedEnd;
+                // Empieza y termina antes
+                const case1 = (initCalendarDay >= normalizedStart && initCalendarDay >= normalizedEnd)
+
+                // Empieza y termina despues
+                const case2 = (endCalendarDay <= normalizedStart && endCalendarDay <= normalizedEnd)
+                
+                return !(case1 || case2)
             });
-
-            const groupEvents = data.group_events.filter(event => {
-                const start = new Date(event.start_time);
-                const end = new Date(event.end_time);
-
-                const normalizedTarget = Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-                const normalizedStart = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
-                const normalizedEnd = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
-
-                return normalizedTarget >= normalizedStart && normalizedTarget <= normalizedEnd;
-            });
+            
 
             return { personalEvents, groupEvents };
         })
@@ -228,6 +258,12 @@ export function adjustDateByDays(dateString, days) {
     return date.toISOString().split('T')[0]; // Retornar solo la parte de la fecha
 }
 
+function fixHourZone(day, hours) {
+    const date = new Date(day);
+    date.setHours(date.getHours() + hours);
+    return date;
+}
+
 document.getElementById('logoutBtn').addEventListener('click', function () {
     // Eliminar los datos del usuario del almacenamiento
     localStorage.removeItem('authToken');
@@ -236,3 +272,14 @@ document.getElementById('logoutBtn').addEventListener('click', function () {
     sessionStorage.removeItem('userData');
 
 })
+
+function dateToInt(date) {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
+    const intDate = year * 10000000000 + month * 100000000 + day * 1000000 + hours * 10000 + minutes * 100 + seconds;
+    return intDate;
+}

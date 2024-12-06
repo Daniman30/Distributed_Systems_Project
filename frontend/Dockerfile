@@ -1,14 +1,11 @@
 # Imagen base de Python
 FROM python:3.9-slim
 
+# Instalar ping
+RUN apt-get update && apt-get install -y inetutils-ping
+
 # Establecer el directorio de trabajo
 WORKDIR /app
-
-# Copiar el archivo de requisitos
-#COPY requirements.txt /app/
-
-# Instalar dependencias
-#RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar el código del frontend
 COPY . /app/

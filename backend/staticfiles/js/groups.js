@@ -3,7 +3,8 @@ import {getUserId} from './contacts.js';
 import {adjustDateByDays} from './calendar.js';
 import {manipulate} from './calendar.js';
 
-const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
 
 if (userData) {
     // Convertir los datos del formato JSON a un objeto JavaScript
@@ -445,6 +446,7 @@ function deleteMemberFunction(groupId, memberId) {
             if (data) {
                 console.log('Respuesta del servidor:', data);
             }
+            manipulate()
             closeMenu2()
             closeMenu()
         })
