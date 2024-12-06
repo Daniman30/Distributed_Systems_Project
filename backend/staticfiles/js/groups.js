@@ -67,7 +67,7 @@ document.getElementById('btn_create_group').addEventListener('click', function (
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al crear el grupo');
+            alert(error.message);
         });
 });
 
@@ -133,7 +133,7 @@ document.getElementById('list_groups').addEventListener('click', function () {
         .catch(error => {
             // Manejar errores
             console.error('Error:', error.message);
-            alert('Error al obtener grupos');
+            alert(error.message);
         });
 });
 
@@ -363,7 +363,7 @@ function addMemberFunction(id) {
         .catch(error => {
             // Manejar errores
             console.error('Error:', error.message);
-            alert('Hubo un error al obtener los contactos');
+            alert(error.message);
         });
 
 
@@ -412,7 +412,7 @@ function addMemberEndpoint(id, contact) {
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Hubo un error al adicionar miembro');
+                    alert(error.message);
                 });
         })
         .catch(error => {
@@ -452,7 +452,7 @@ function deleteMemberFunction(groupId, memberId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al adicionar miembro');
+            alert(error.message);
         });
 }
 
@@ -486,7 +486,7 @@ function deleteGroupFunction(groupId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al eliminar grupo');
+            alert(error.message);
         });
 }
 
@@ -521,7 +521,7 @@ function leaveGroupFunction(groupId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al abandonar grupo');
+            alert(error.message);
         });
 }
 
@@ -549,7 +549,7 @@ function agendaGroup1(groupID) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al consultar la agenda');
+            alert(error.message);
         });
 }
 
@@ -576,7 +576,7 @@ function agendaMember1() {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al consultar la agenda');
+            alert(error.message);
         });
 }
 
