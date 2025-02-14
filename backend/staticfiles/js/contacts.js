@@ -37,7 +37,7 @@ export function getUserId(username, email) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al obtener el ID de usuario');
+            alert(error.message);
             throw error;
         });
 }
@@ -80,7 +80,7 @@ document.getElementById('btn_add_contact').addEventListener('click', function ()
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Hubo un error al crear el contacto');
+                    alert(error.message);
                 });
         })
         .catch(error => {
@@ -138,7 +138,7 @@ document.getElementById('list_contacts').addEventListener('click', function () {
         .catch(error => {
             // Manejar errores
             console.error('Error:', error.message);
-            alert('Hubo un error al obtener los contactos');
+            alert(error.message);
         });
 });
 
@@ -171,6 +171,6 @@ function deleteGroupFunction(contactId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al eliminar contacto');
+            alert(error.message);
         });
 }

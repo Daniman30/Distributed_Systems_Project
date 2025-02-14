@@ -49,7 +49,7 @@ document.getElementById('btn').addEventListener('click', function () {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al registrar la cuenta');
+            alert(error.message);
         });
 });
 

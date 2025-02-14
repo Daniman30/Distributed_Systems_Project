@@ -248,7 +248,7 @@ export function dailyEvents(day, url) {
         })
         .catch(error => {
             console.error('Error:', error.message);
-            alert('Hubo un error al obtener los eventos');
+            alert(error.message);
         });
 }
 

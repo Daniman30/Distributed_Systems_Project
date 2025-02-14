@@ -66,7 +66,7 @@ document.getElementById('btn_create_event').addEventListener('click', async func
 
     } catch (error) {
         console.error('Error:', error);
-        alert('Hubo un error al procesar la solicitud.');
+        alert(error.message);
     }
 });
 
@@ -97,7 +97,7 @@ async function viewEvent(idEvent) {
         return EventFinal;
     } catch (error) {
         console.error('Error:', error.message);
-        alert('Hubo un error al obtener los eventos');
+        alert(error.message);
         throw error; // Re-lanzar el error para manejarlo en la llamada
     }
 }
@@ -229,7 +229,7 @@ document.getElementById('alertsDropdown').addEventListener('click', function () 
         .catch(error => {
             // Manejar errores
             console.error('Error:', error.message);
-            alert('Hubo un error al obtener los eventos');
+            alert(error.message);
         });
 });
 
@@ -285,7 +285,7 @@ document.getElementById('acceptBtn').addEventListener('click', function () {
         .catch(error => {
             // Manejar errores
             console.error('Error:', error.message);
-            alert('Hubo un error al aceptar el evento');
+            alert(error.message);
         });
 });
 
@@ -315,7 +315,7 @@ document.getElementById('declineBtn').addEventListener('click', function () {
         .catch(error => {
             // Manejar errores
             console.error('Error:', error.message);
-            alert('Hubo un error al rechazar el evento');
+            alert(error.message);
         });
 });
 
