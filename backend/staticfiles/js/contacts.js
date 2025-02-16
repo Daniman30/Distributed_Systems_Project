@@ -1,17 +1,20 @@
 import {closeMenu} from './calendar.js';
 
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+const userData = sessionStorage.getItem('userData');
+
+// Convierte el string JSON a un objeto JavaScript
+const userDataObject = JSON.parse(userData);
 
 // Obtener el id de un usuario a partir de su username y su email
 export function getUserId(username, email) {
     // Crear el objeto con los datos
     const data = {
-        username: username,
-        email: email,
+        username: username
     };
 
     // Enviar los datos al endpoint
-    return fetch('http://127.0.0.1:8000/api/get_user_id/', {
+    return fetch('http://127.0.0.1:5000/contacts/get_user_id/', {
         method: 'POST', 
         headers: {
             'Content-Type': 'application/json',
@@ -33,7 +36,7 @@ export function getUserId(username, email) {
             // console.log(data)
             // console.log(data.id)
             // finalID = data.id
-            return data.id
+            return data.contact
         })
         .catch(error => {
             console.error('Error:', error);
@@ -51,14 +54,18 @@ document.getElementById('btn_add_contact').addEventListener('click', function ()
         .then(id => {
             console.log('ID final:', id);
             const contactData = {
-                contact: id
+                user_id: id,
+                contact_name: username,
+                owner_id: userDataObject.id
             }
             console.log(username)
             console.log(email)
+            console.log(userDataObject.id)
             console.log(id)
         
         
-            fetch('http://127.0.0.1:8000/api/contacts/', {
+            // fetch('http://127.0.0.1:5000/api/contacts/', {
+            fetch('http://127.0.0.1:5000/contacts/', {
                 method: 'POST', 
                 headers: {
                     'Content-Type': 'application/json',
@@ -91,7 +98,8 @@ document.getElementById('btn_add_contact').addEventListener('click', function ()
 // List Contacts
 document.getElementById('list_contacts').addEventListener('click', function () {
     // Realizar la solicitud GET al endpoint de contactos
-    fetch('http://127.0.0.1:8000/api/contacts/', {
+    // fetch('http://127.0.0.1:5000/api/contacts/', {
+    fetch(`http://127.0.0.1:5000/contacts/${userDataObject.id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -143,7 +151,7 @@ document.getElementById('list_contacts').addEventListener('click', function () {
 });
 
 function deleteGroupFunction(contactId) {
-    fetch(`http://127.0.0.1:8000/api/contacts/${contactId}/delete/`, {
+    fetch(`http://127.0.0.1:5000/api/contacts/${contactId}/delete/`, {
         method: 'DELETE', 
         headers: {
             'Content-Type': 'application/json',
