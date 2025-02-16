@@ -101,6 +101,16 @@ def getUserID():
         return jsonify({"contact": contact}), 200
     else:
         return jsonify({'message': 'Credenciales incorrectas'}), 401
+    
+# Endpoint para obtener username a partir de id
+@app.route('/contacts/get_username/', methods=['POST'])
+def getUsername():
+    data = request.get_json()
+    contact = db.getUsername(data.get('id'))
+    if contact:
+        return jsonify({"contact": contact}), 200
+    else:
+        return jsonify({'message': 'Credenciales incorrectas'}), 401
 
 # ----------------------------
 # Endpoints para Eventos

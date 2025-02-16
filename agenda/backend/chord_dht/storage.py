@@ -73,7 +73,7 @@ class GroupMember(Base):
     __tablename__ = 'group_members'
     id = Column(Integer, primary_key=True, autoincrement=True)
     group_id = Column(Integer, ForeignKey('groups.id'), nullable=False)
-    admin_id = Column(Integer, ForeignKey('users.id'), nullable=True)  # ID del administrador que añadió al miembro
+    # admin_id = Column(Integer, ForeignKey('admin.id'), nullable=True)  # ID del administrador que añadió al miembro
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     role = Column(Enum('admin', 'member', name='role_types'), nullable=False, default='member')  # Rol del miembro
     group = relationship('Group', back_populates='members')
@@ -318,7 +318,7 @@ class Database:
         Lista los miembros de un grupo
         """
         members = self.session.query(GroupMember).filter(GroupMember.group_id == group_id).all()
-        return [member.id for member in members]
+        return [member.user_id for member in members]
     
     def delete_group(self, group_id: int) -> bool:
         """
@@ -366,7 +366,7 @@ class Database:
         self.session.add(agenda_entry)
         self.session.commit()
         return True
-<<<<<<< HEAD
+    
     def list_personal_agenda(self, user_id: int) -> list:
         """Lista todos los eventos de un usuario con su nombre y hora."""
         events = self.session.query(Event).filter(
@@ -386,8 +386,8 @@ class Database:
                 'privacy': event.privacy,
                 'status': event.status
             })
-
         return agenda
+    
     def list_group_agenda(self, group_id: int, user_id: int) -> list:
         """Lista todos los eventos de un grupo al que pertenece el usuario."""
         # Verificar si el usuario es miembro del grupo
@@ -412,13 +412,16 @@ class Database:
                 'status': event.status,
                 'owner_id': event.owner_id
             })
-
         return agenda
-=======
-    
+
     def getUserID(self, username):
         user = self.session.query(User).filter_by(name=username).first()
         if user:
             return user.id
         return None
->>>>>>> 09d3181ea90c63f6187c75558090fec73b084083
+    
+    def getUsername(self, id):
+        user = self.session.query(User).filter_by(id=id).first()
+        if user:
+            return user.name
+        return None

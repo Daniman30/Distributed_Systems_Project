@@ -16,27 +16,27 @@ document.getElementById('btn_create_event').addEventListener('click', async func
     const eventName = document.getElementById('EventName').value;
     const eventDateInit = document.getElementById('EventDateInit').value;
     const eventTimeInit = document.getElementById('EventTimeInit').value;
-    const eventDateEnd = document.getElementById('EventDateEnd').value;
-    const eventTimeEnd = document.getElementById('EventTimeEnd').value;
-    const eventDescription = document.getElementById('EventDescription').value;
+    // const eventDateEnd = document.getElementById('EventDateEnd').value;
+    // const eventTimeEnd = document.getElementById('EventTimeEnd').value;
+    // const eventDescription = document.getElementById('EventDescription').value;
     const eventPrivacyCheck = document.getElementById('checkPrivacy').checked;
     const eventPrivacy = eventPrivacyCheck ? 'private' : 'public';
     const groupEvent = document.getElementById('EventGroup').value;
-    const participantsEvent = `${document.getElementById('EventParticipants').value}, ${user.id}`;
+    // const participantsEvent = `${document.getElementById('EventParticipants').value}, ${user.id}`;
 
-    const numbers = participantsEvent
-    ? participantsEvent.split(',').map(num => parseFloat(num.trim())).filter(num => !isNaN(num)) 
-    : [];
+    // const numbers = participantsEvent
+    // ? participantsEvent.split(',').map(num => parseFloat(num.trim())).filter(num => !isNaN(num)) 
+    // : [];
 
     const rawData = {
         title: eventName,
         start_time: `${eventDateInit}T${eventTimeInit}`,
-        end_time: `${eventDateEnd}T${eventTimeEnd}`,
+        // end_time: `${eventDateEnd}T${eventTimeEnd}`,
         owner_id: user.id,
         privacy: eventPrivacy,
         group: groupEvent || null,
-        description: eventDescription || null,
-        participants: numbers.length > 0 ? numbers : null,
+        // description: eventDescription || null,
+        // participants: numbers.length > 0 ? numbers : null,
     };
 
     // {

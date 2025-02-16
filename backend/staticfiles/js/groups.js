@@ -23,21 +23,19 @@ let activeMenu3 = null; // Para rastrear qué menú está activo en la 3ra capa
 document.getElementById('btn_create_group').addEventListener('click', function () {
     // Obtener los valores de los inputs
     const GroupName = document.getElementById('GroupName').value;
-    const GroupDescription = document.getElementById('GroupDescription').value;
+    // const GroupDescription = document.getElementById('GroupDescription').value;
     const is_hierarchical = document.getElementById('is_hierarchical').checked; // Verificar si está marcado el checkbox
     var data = 0
     
     if(is_hierarchical) {
         data = {
             name: GroupName,
-            description: GroupDescription,
             is_hierarchical: true,
             owner_id: user.id
         };
     } else {
         data = {
             name: GroupName,
-            description: GroupDescription,
             is_hierarchical: false,
             owner_id: user.id
         };
@@ -201,34 +199,37 @@ function openGroupInfoMenu(group, members) {
     // membersList.textContent = 'Members:'
     members['members'].forEach(member => {
         const memberList = document.createElement('li');
-        memberList.textContent = `Member: ${searchId(member)}`;
-        membersList.appendChild(memberList)
-
-        // Icono agenda miembro
-        const agendaIconMember = document.createElement('i');
-        agendaIconMember.className = 'fas fa-calendar-alt';
-        agendaIconMember.style.paddingLeft = '10px';
-        agendaIconMember.style.paddingRight = '10px';
-        agendaIconMember.addEventListener('click', function () {
-            const date = agendaGroup();
-            window.globalVariable = date;
-            manipulate();
-            window.globalVariable = "";
-            closeMenu2();
-            closeMenu();
-        })
-
-        // Icono borrar miembro
-        const deleteMember = document.createElement('i');
-        deleteMember.className = 'fas fa-trash-alt';
-        deleteMember.style.paddingLeft = '10px'; // Espacio entre el nombre y el ícono
-        deleteMember.addEventListener('click', function () {
-            console.log('group id: ', group.id)
-            console.log('member id: ', member)
-            deleteMemberFunction(group.id, member); // Llamar a la función para abrir el menú flotante
-        });
-        memberList.appendChild(agendaIconMember)
-        memberList.appendChild(deleteMember)
+        getUsername(member)
+            .then(username => {
+                memberList.textContent = `Member: ${username}`;
+                membersList.appendChild(memberList)
+        
+                // Icono agenda miembro
+                const agendaIconMember = document.createElement('i');
+                agendaIconMember.className = 'fas fa-calendar-alt';
+                agendaIconMember.style.paddingLeft = '10px';
+                agendaIconMember.style.paddingRight = '10px';
+                agendaIconMember.addEventListener('click', function () {
+                    const date = agendaGroup();
+                    window.globalVariable = date;
+                    manipulate();
+                    window.globalVariable = "";
+                    closeMenu2();
+                    closeMenu();
+                })
+        
+                // Icono borrar miembro
+                const deleteMember = document.createElement('i');
+                deleteMember.className = 'fas fa-trash-alt';
+                deleteMember.style.paddingLeft = '10px'; // Espacio entre el nombre y el ícono
+                deleteMember.addEventListener('click', function () {
+                    console.log('group id: ', group.id)
+                    console.log('member id: ', member)
+                    deleteMemberFunction(group.id, member); // Llamar a la función para abrir el menú flotante
+                });
+                memberList.appendChild(agendaIconMember)
+                memberList.appendChild(deleteMember)
+            })
     })
 
     // Icono borrar grupo
@@ -275,7 +276,7 @@ function openGroupInfoMenu(group, members) {
 
     // Agregar un evento de clic al icono de addMember
     addMember.addEventListener('click', function () {
-        addMemberFunction(user.id); // Llamar a la función para abrir el menú flotante
+        addMemberFunction(user.id, group); // Llamar a la función para abrir el menú flotante
         closeMenu2();
         closeMenu();
     });
@@ -337,7 +338,7 @@ function searchId(created_by) {
     return created_by
 }
 
-function addMemberFunction(id) {
+function addMemberFunction(id, group) {
     // closeMenu()
     const menu = document.getElementById('menu8');
 
@@ -379,7 +380,7 @@ function addMemberFunction(id) {
                 addMemberIcon.style.marginLeft = '15px';
 
                 addMemberIcon.addEventListener('click', function () {
-                    addMemberEndpoint(id, contact)
+                    addMemberEndpoint(group.id, contact)
                 })
 
                 // Agregar el ícono al elemento de lista
@@ -412,11 +413,11 @@ function addMemberFunction(id) {
     });
 }
 
-function addMemberEndpoint(id, contact) {
+function addMemberEndpoint(group_id, contact) {
     getUserId(contact.contact_name, contact.contact_email)
         .then(idUser => {
             const memberData = {
-                group_id: id,
+                group_id: group_id,
                 user_id: idUser,
                 role: 'member'
             }
@@ -626,7 +627,36 @@ function agendaGroup(groupID) {
     return returnDate;
 }
 
-function agendaMember() {
-    // const initDate = new Date()
-    // console.log(initDate)
+// Obtener el username de un usuario a partir de su id
+function getUsername(userID) {
+    // Crear el objeto con los datos
+    const data = {
+        id: userID
+    };
+
+    // Enviar los datos al endpoint
+    return fetch('http://127.0.0.1:5000/contacts/get_username/', {
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`,
+        },
+        body: JSON.stringify(data),
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(`Error al obtener el username del usuario: ${err.detail || err}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            return data.contact
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(error.message);
+            throw error;
+        });
 }
