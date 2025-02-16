@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
+from utils import set_id
+from chord_dht import server
 from storage import Database  # Asegúrate de que 'database.py' contenga el código que compartiste
 import os
 
@@ -44,8 +46,8 @@ def sign_up():
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
-    created, user = db.register_user(username, email, password)
-    if created:
+    created, user = server.register(set_id(username),username, email, password)
+    if created== "User registered":
         return jsonify({'message': 'Usuario registrado exitosamente', 'user': user}), 201
     else:
         return jsonify({'message': 'Error al registrar el usuario (posible email duplicado)', 'user': user}), 400
@@ -56,7 +58,7 @@ def log_in():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-    user = db.login_user(username, password)
+    user = server.login_user(set_id(username), password)
     if user:
         return jsonify({'message': 'Ingreso exitoso', 'user': user}), 201
     else:
@@ -73,7 +75,7 @@ def add_contact():
     user_id = data.get('user_id')
     contact_name = data.get('contact_name')
     owner_id = data.get('owner_id')
-    if db.add_contact(user_id, contact_name, owner_id):
+    if server.add_contact(user_id, contact_name, owner_id)=="Contact added":
         return jsonify({'message': 'Contacto agregado'}), 201
     else:
         return jsonify({'message': 'Error al agregar el contacto'}), 400
@@ -81,13 +83,13 @@ def add_contact():
 # Endpoint para listar contactos
 @app.route('/contacts/<int:contact_id>', methods=['GET'])
 def list_contacts(contact_id):
-    contacts = db.list_contacts(contact_id)
+    contacts = server.list_contacts(contact_id)
     return jsonify({'contacts': contacts}), 200
 
 # Endopoint para eliminar contactos
 @app.route('/contacts/<int:contact_id>/delete/', methods=['DELETE'])
 def delete_contact(contact_id):
-    if db.delete_contact(contact_id):
+    if server.remove_contact(id,contact_id) == "Contact removed":
         return jsonify({'message': 'Contacto eliminado de la lista'}), 200
     else:
         return jsonify({'message': 'Error al eliminar contacto de la lista'}), 400
@@ -124,7 +126,7 @@ def create_event():
     owner_id = data.get('owner_id')
     privacy = data.get('privacy')
     group_id = data.get('group', None)
-    if db.create_event(name, date, owner_id, privacy, group_id):
+    if server.create_event(owner_id, name, date, privacy, group_id) == f"Event created: {name}":
         return jsonify({'message': 'Evento creado exitosamente'}), 201
     else:
         return jsonify({'message': 'Error al crear el evento'}), 400
@@ -136,7 +138,7 @@ def create_group_event():
     date = data.get('date')
     owner_id = data.get('owner_id')
     group_id = data.get('group_id')
-    if db.create_group_event(name, date, owner_id, group_id):
+    if server.create_group_event(owner_id,name, date, group_id)==f"Event created: {name}":
         return jsonify({'message': 'Evento grupal creado exitosamente'}), 201
     else:
         return jsonify({'message': 'Error al crear el evento grupal'}), 400
@@ -148,56 +150,36 @@ def create_individual_event():
     date = data.get('date')
     owner_id = data.get('owner_id')
     contact_id = data.get('contact_id')
-    if db.create_individual_event(name, date, owner_id, contact_id):
+    if server.create_individual_event(owner_id,name, date, contact_id)==f"Event created: {name}":
         return jsonify({'message': 'Evento individual creado exitosamente'}), 201
     else:
         return jsonify({'message': 'Error al crear el evento individual'}), 400
 
 @app.route('/confirm_event/<int:event_id>/', methods=['POST'])
-def confirm_event(event_id):
-    if db.confirm_event(event_id):
+def confirm_event(event_id,user_id):
+    if server.confirm_event(user_id,event_id)=="Event confirmed":
         return jsonify({'message': 'Evento confirmado exitosamente'}), 200
     else:
         return jsonify({'message': 'Error al confirmar el evento'}), 400
 
 @app.route('/cancel_event/<int:event_id>/', methods=['POST'])
-def cancel_event(event_id):
-    if db.cancel_event(event_id):
+def cancel_event(event_id,user_id):
+    if server.cancel_event(user_id,event_id)== "Event canceled":
         return jsonify({'message': 'Evento cancelado exitosamente'}), 200
     else:
         return jsonify({'message': 'Error al cancelar el evento'}), 400
 
 @app.route('/list_events/<int:user_id>/', methods=['GET'])
 def list_events(user_id):
-    events = db.list_events(user_id)
-    events_list = []
-    for event in events:
-        events_list.append({
-            'id': event.id,
-            'name': event.name,
-            'date': event.date.strftime('%Y-%m-%d'),
-            'owner_id': event.owner_id,
-            'privacy': event.privacy,
-            'group_id': event.group_id,
-            'status': event.status
-        })
-    return jsonify({'events': events_list}), 200
+    events = server.list_events(user_id)
+
+    return jsonify({'events': events}), 200
 
 @app.route('/list_events_pending/<int:user_id>/', methods=['GET'])
 def list_events_pending(user_id):
-    events = db.list_events_pending(user_id)
-    events_list = []
-    for event in events:
-        events_list.append({
-            'id': event.id,
-            'name': event.name,
-            'date': event.date.strftime('%Y-%m-%d'),
-            'owner_id': event.owner_id,
-            'privacy': event.privacy,
-            'group_id': event.group_id,
-            'status': event.status
-        })
-    return jsonify({'events': events_list}), 200
+    events = server.list_events_pending(user_id)
+    
+    return jsonify({'events': events}), 200
 
 # ----------------------------
 # Endpoints para Grupos
@@ -208,7 +190,7 @@ def create_group():
     data = request.get_json()
     name = data.get('name')
     owner_id = data.get('owner_id')
-    if db.create_group(name, owner_id):
+    if server.create_group(owner_id, name)=="Group created":
         return jsonify({'message': 'Grupo creado exitosamente'}), 201
     else:
         return jsonify({'message': 'Error al crear el grupo'}), 400
@@ -219,39 +201,38 @@ def add_member_to_group():
     group_id = data.get('group_id')
     user_id = data.get('user_id')
     role = data.get('role', 'member')
-    if db.add_member_to_group(group_id, user_id, role):
+    if server.add_member_to_group(id,group_id, user_id, role)=="Member added":
         return jsonify({'message': 'Miembro agregado al grupo'}), 201
     else:
         return jsonify({'message': 'Error al agregar miembro al grupo'}), 400
 
 @app.route('/remove_member_from_group/<int:group_id>/<int:member_id>', methods=['DELETE'])
 def remove_member_from_group(group_id, member_id):
-    if db.remove_member_from_group(group_id, member_id):
+    if server.remove_member_from_group(id,group_id, member_id)=="Member removed":
         return jsonify({'message': 'Miembro eliminado del grupo'}), 200
     else:
         return jsonify({'message': 'Error al eliminar miembro del grupo'}), 400
 
 @app.route('/list_groups/<int:user_id>/', methods=['GET'])
 def list_groups(user_id):
-    groups = db.list_groups(user_id)
-    groups_list = [{'id': g[0], 'name': g[1]} for g in groups]
-    return jsonify({'groups': groups_list}), 200
+    groups = server.list_group(user_id)
+    return jsonify({'groups': groups}), 200
 
 @app.route('/list_members/<int:group_id>/', methods=['GET'])
 def list_members(group_id):
-    members = db.list_members(group_id)
+    members = server.list_member(id,group_id)
     return jsonify({'members': members}), 200
 
 @app.route('/delete_group/<int:group_id>/', methods=['DELETE'])
 def delete_group(group_id):
-    if db.delete_group(group_id):
+    if server.delete_group(id,group_id) == "Group deleted":
         return jsonify({'message': 'Grupo eliminado'}), 200
     else:
         return jsonify({'message': 'Error al eliminar el grupo'}), 400
 
 @app.route('/leave_group/<int:group_id>/<int:user_id>', methods=['DELETE'])
 def leave_group(group_id, user_id):
-    if db.leave_group(group_id, user_id):
+    if server.leave_group(user_id, group_id)=="Group leaved":
         return jsonify({'message': 'Grupo abandonado'}), 200
     else:
         return jsonify({'message': 'Error al abandonar el grupo'}), 400

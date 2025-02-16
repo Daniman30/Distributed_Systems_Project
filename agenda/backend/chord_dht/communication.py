@@ -21,15 +21,21 @@ ADD_CONTACT = 'add_cnt'
 LIST_PERSONAL_AGENDA = 'list_personal_agenda'
 LIST_GROUP_AGENDA = 'list_group_agenda'
 CREATE_GROUP = 'create_group'
+DELETE_GROUP = 'delete_group'
+LEAVE_GROUP = 'leave_group'
 ADD_MEMBER = 'add_member'
 REMOVE_MEMBER = 'remove_member'
 LIST_GROUPS = 'list_groups'
 CREATE_EVENT = 'create_event'
+CREATE_GROUP_EVENT = 'create_group_event'
+CREATE_INDIVIDUAL_EVENT ='create_individual_event'
 CONFIRM_EVENT = 'confirm_event'
 CANCEL_EVENT = 'cancel_event'
 LIST_EVENTS = 'list_events'
+LIST_EVENTS_PENDING = 'list_events_pending'
 LIST_CONTACTS = 'list_contacts'
 REMOVE_CONTACT = 'remove_contact'
+LIST_MEMBER = 'list_member'
 BROADCAST_IP = '255.255.255.255'
 
 class NodeReference:
@@ -41,7 +47,7 @@ class NodeReference:
     def _send_data(self, op: str, data=None) -> bytes:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect((self._ip, self._port))
+                s.connect((self.ip, self.port))
                 s.sendall(f'{op}|{data}'.encode('utf-8'))
                 return s.recv(1024)
         except Exception as e:
@@ -67,7 +73,9 @@ class NodeReference:
     def register(self, id: int, name: str, email: str, password: str) -> str:
         response = self._send_data(REGISTER, f'{id}|{name}|{email}|{password}')
         return response
-    
+    def login(self, id:int,email: str, password: str) -> str:
+        response = self._send_data(LOGIN, f'{id}|{email}|{password}')
+        return response.decode()
     def list_personal_agenda(self, user_id: int) -> str:
         response = self._send_data(LIST_PERSONAL_AGENDA, str(user_id))
         return response
@@ -76,12 +84,24 @@ class NodeReference:
         response = self._send_data(LIST_GROUPS, str(user_id))
         return response
     
-    def add_member_to_group(self, group_id: int, user_id: int) -> str:
-        response = self._send_data(ADD_MEMBER, f'{group_id}|{user_id}')
+    def add_member_to_group(self, id:int,group_id: int, user_id: int) -> str:
+        response = self._send_data(ADD_MEMBER, f'{id}|{group_id}|{user_id}')
+        return response
+    def remove_member_from_group(self,id:int, group_id: int, user_id: int) -> str:
+        response = self._send_data(REMOVE_MEMBER, f'{id}|{group_id}|{user_id}')
+        return response
+    def list_member(self,user_id: int, group_id: int) -> str:
+        response = self._send_data(LIST_MEMBER, f'{group_id}|{user_id}')
         return response
     
-    def create_group(self, group_id: int, name: str, owner_id: int) -> str:
-        response = self._send_data(CREATE_GROUP, f'{group_id}|{name}|{owner_id}')
+    def create_group(self, owner_id: int, name: str) -> str:
+        response = self._send_data(CREATE_GROUP, f'{name}|{owner_id}')
+        return response
+    def delete_group(self, owner_id: int, name: str) -> str:
+        response = self._send_data(DELETE_GROUP, f'{name}|{owner_id}')
+        return response
+    def leave_group(self, owner_id: int, name: str) -> str:
+        response = self._send_data(LEAVE_GROUP, f'{name}|{owner_id}')
         return response
     def list_contacts(self, user_id: int) -> str:
         response = self._send_data(LIST_CONTACTS, str(user_id))
@@ -92,6 +112,9 @@ class NodeReference:
     def add_contact(self, user_id: int, contact_name: str) -> str:
         response = self._send_data(ADD_CONTACT, f'{user_id}|{contact_name}')
         return response
+    def list_events_pending(self, user_id: int) -> str:
+        response = self._send_data(LIST_EVENTS_PENDING, str(user_id))
+        return response
     def list_events(self, user_id: int) -> str:
         response = self._send_data(LIST_EVENTS, str(user_id))
         return response
@@ -101,8 +124,14 @@ class NodeReference:
     def confirm_event(self, event_id: int) -> str:
         response = self._send_data(CONFIRM_EVENT, str(event_id))
         return response
-    def create_event(self, event_id: int, name: str, date: str, owner_id: int, privacy: str, group_id=None) -> str:
-        response = self._send_data(CREATE_EVENT, f'{event_id}|{name}|{date}|{owner_id}|{privacy}|{group_id}')
+    def create_event(self, event_id: int, name: str, date: str, privacy: str, group_id=None) -> str:
+        response = self._send_data(CREATE_EVENT, f'{event_id}|{name}|{date}|{privacy}|{group_id}')
+        return response
+    def create_group_event(self, event_id: int, name: str, date: str, group_id=None) -> str:
+        response = self._send_data(CREATE_GROUP_EVENT, f'{event_id}|{name}|{date}|{group_id}')
+        return response
+    def create_individual_event(self, event_id: int, name: str, date: str, owner_id: int, privacy: str, group_id=None) -> str:
+        response = self._send_data(CREATE_INDIVIDUAL_EVENT, f'{event_id}|{name}|{date}|{owner_id}|{privacy}|{group_id}')
         return response
 
 class BroadcastRef:
