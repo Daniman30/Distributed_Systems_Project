@@ -1,5 +1,7 @@
-const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+const token = sessionStorage.getItem('authToken');
 const userData = sessionStorage.getItem('userData');
+
+console.log(userData)
 
 // Convierte el string JSON a un objeto JavaScript
 const userDataObject = JSON.parse(userData);
@@ -277,7 +279,6 @@ export function dailyEvents(day, url) {
         })
         .catch(error => {
             console.error('Error:', error.message);
-            alert(error.message);
         });
 }
 

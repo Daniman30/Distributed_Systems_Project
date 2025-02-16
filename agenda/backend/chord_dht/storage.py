@@ -107,10 +107,10 @@ class Database:
         self.session.add(user)
         try:
             self.session.commit()
-            return True
+            return (True, {'id': user.id, 'name': user.name})
         except:
             self.session.rollback()
-            return False  # El email ya está registrado
+            return (False, None)  # El email ya está registrado
 
     def login_user(self, username: str, password: str) -> dict:
         """
@@ -141,13 +141,19 @@ class Database:
         """
         Lista los contactos de un usuario.
         """
-        contacts = self.session.query(Contact).all()
-        print("id", [contact.id for contact in contacts])
-        print("user_id", [contact.user_id for contact in contacts])
-        print("contact_name", [contact.contact_name for contact in contacts])
-        print("contact_name", [contact.owner_id for contact in contacts])
-        print("user.name", [contact.user.name for contact in contacts])
-        return [contact.contact_name for contact in contacts]
+        contacts = self.session.query(Contact).filter(Contact.owner_id == user_id)
+        return [{"contact_name": contact.contact_name, "id": contact.id} for contact in contacts]
+    
+    def delete_contact(self, contact_id: int) -> bool:
+        """
+        Elimina un contacto de la lista de contactos de un usuario
+        """
+        contact = self.session.query(Contact).filter_by(id=contact_id).first()
+        if contact:
+            self.session.delete(contact)
+            self.session.commit()
+            return True
+        return False  # El miembro no existe en el grupo
 
     # Métodos para eventos
     def create_event(self, name: str, date: str, owner_id: int, privacy: str, group_id=None) -> bool:
@@ -313,6 +319,29 @@ class Database:
         """
         members = self.session.query(GroupMember).filter(GroupMember.group_id == group_id).all()
         return [member.id for member in members]
+    
+    def delete_group(self, group_id: int) -> bool:
+        """
+        Elimina un grupo
+        """
+        group = self.session.query(Group).filter_by(id=group_id).first()
+        if group:
+            self.session.delete(group)
+            self.session.commit()
+            return True
+        return False  # El grupo no existe
+    
+    def leave_group(self, group_id: int, user_id: int) -> bool:
+        """
+        Abandona un grupo
+        """
+        group = self.session.query(GroupMember).filter_by(group_id=group_id, user_id=user_id).first()
+        if group:
+            self.session.delete(group)
+            self.session.commit()
+            return True
+        return False  # El grupo no existe
+    #! En GroupMember group_id deberia ser admin_id y crear otra columna que sea group_id
 
     # Métodos auxiliares
     def _has_event_conflict(self, user_id: int, event_date: datetime) -> bool:

@@ -44,10 +44,11 @@ def sign_up():
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
-    if db.register_user(username, email, password):
-        return jsonify({'message': 'Usuario registrado exitosamente'}), 201
+    created, user = db.register_user(username, email, password)
+    if created:
+        return jsonify({'message': 'Usuario registrado exitosamente', 'user': user}), 201
     else:
-        return jsonify({'message': 'Error al registrar el usuario (posible email duplicado)'}), 400
+        return jsonify({'message': 'Error al registrar el usuario (posible email duplicado)', 'user': user}), 400
 
 # Endpoint para iniciar sesión
 @app.route('/log_in/', methods=['POST'])
@@ -57,7 +58,7 @@ def log_in():
     password = data.get('password')
     user = db.login_user(username, password)
     if user:
-        return jsonify({'user': user}), 200
+        return jsonify({'message': 'Ingreso exitoso', 'user': user}), 201
     else:
         return jsonify({'message': 'Credenciales incorrectas'}), 401
 
@@ -78,12 +79,18 @@ def add_contact():
         return jsonify({'message': 'Error al agregar el contacto'}), 400
 
 # Endpoint para listar contactos
-@app.route('/contacts/<int:user_id>', methods=['GET'])
-def list_contacts(user_id):
-    print("user_id", user_id)
-    contacts = db.list_contacts(user_id)
-    print("contacts:", contacts)
+@app.route('/contacts/<int:contact_id>', methods=['GET'])
+def list_contacts(contact_id):
+    contacts = db.list_contacts(contact_id)
     return jsonify({'contacts': contacts}), 200
+
+# Endopoint para eliminar contactos
+@app.route('/contacts/<int:contact_id>/delete/', methods=['DELETE'])
+def delete_contact(contact_id):
+    if db.delete_contact(contact_id):
+        return jsonify({'message': 'Contacto eliminado de la lista'}), 200
+    else:
+        return jsonify({'message': 'Error al eliminar contacto de la lista'}), 400
 
 # Endpoint para obtener id a partir de username
 @app.route('/contacts/get_user_id/', methods=['POST'])
@@ -207,12 +214,9 @@ def add_member_to_group():
     else:
         return jsonify({'message': 'Error al agregar miembro al grupo'}), 400
 
-@app.route('/remove_member_from_group/', methods=['POST'])
-def remove_member_from_group():
-    data = request.get_json()
-    group_id = data.get('group_id')
-    user_id = data.get('user_id')
-    if db.remove_member_from_group(group_id, user_id):
+@app.route('/remove_member_from_group/<int:group_id>/<int:member_id>', methods=['DELETE'])
+def remove_member_from_group(group_id, member_id):
+    if db.remove_member_from_group(group_id, member_id):
         return jsonify({'message': 'Miembro eliminado del grupo'}), 200
     else:
         return jsonify({'message': 'Error al eliminar miembro del grupo'}), 400
@@ -228,6 +232,21 @@ def list_members(group_id):
     members = db.list_members(group_id)
     return jsonify({'members': members}), 200
 
+@app.route('/delete_group/<int:group_id>/', methods=['DELETE'])
+def delete_group(group_id):
+    if db.delete_group(group_id):
+        return jsonify({'message': 'Grupo eliminado'}), 200
+    else:
+        return jsonify({'message': 'Error al eliminar el grupo'}), 400
+
+@app.route('/leave_group/<int:group_id>/<int:user_id>', methods=['DELETE'])
+def leave_group(group_id, user_id):
+    if db.leave_group(group_id, user_id):
+        return jsonify({'message': 'Grupo abandonado'}), 200
+    else:
+        return jsonify({'message': 'Error al abandonar el grupo'}), 400
+
+
 # ----------------------------
 # Ejecutar la aplicación
 # ----------------------------
@@ -237,10 +256,6 @@ if __name__ == '__main__':
 
 
 #! ########################################
-# Eliminar grupo
-# Eliminar contacto
-# Abandonar grupo
+#? Abandonar grupo
 # Agendas
-# ---otros---
-# test_token
 #! ########################################

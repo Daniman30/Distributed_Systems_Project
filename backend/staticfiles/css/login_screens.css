@@ -3607,8 +3607,9 @@
   
   .custom-control-label {
     position: relative;
-    margin-bottom: 0;
+    margin-top: 1.0rem;
     vertical-align: top;
+    color: #f8f9fc;
   }
   
   .custom-control-label::before {
@@ -11796,9 +11797,8 @@
   }
 
   .checkboxPrivacy {
-    margin-left: 2rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin-right: 6.5rem;
+    margin-top: 2.0rem;
     color: #f8f9fc;
   }
 

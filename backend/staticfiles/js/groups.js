@@ -275,7 +275,7 @@ function openGroupInfoMenu(group, members) {
 
     // Agregar un evento de clic al icono de addMember
     addMember.addEventListener('click', function () {
-        addMemberFunction(group.id); // Llamar a la función para abrir el menú flotante
+        addMemberFunction(user.id); // Llamar a la función para abrir el menú flotante
         closeMenu2();
         closeMenu();
     });
@@ -292,8 +292,8 @@ function openGroupInfoMenu(group, members) {
     menu.appendChild(nameItem)
     nameItem.appendChild(agendaIcon)
     nameItem.appendChild(trashIcon)
-    menu.appendChild(admin)
-    menu.appendChild(description)
+    // menu.appendChild(admin)
+    // menu.appendChild(description)
     menu.appendChild(hierarchical)
     menu.appendChild(membersList)
     divIcons.appendChild(addMember)
@@ -343,7 +343,7 @@ function addMemberFunction(id) {
 
 
     // fetch('http://127.0.0.1:8000/api/contacts/', {
-    fetch('http://127.0.0.1:5000/contacts/', {
+    fetch(`http://127.0.0.1:5000/contacts/${id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -367,7 +367,7 @@ function addMemberFunction(id) {
             const contactList = document.getElementById('contact-list-member'); // Asegúrate de tener un contenedor en tu HTML con este ID
             contactList.innerHTML = ''; // Limpiar cualquier contenido previo
 
-            data.forEach(contact => {
+            data['contacts'].forEach(contact => {
                 const listItem = document.createElement('li');
                 listItem.textContent = `${contact.contact_name}`;
 
@@ -454,7 +454,7 @@ function addMemberEndpoint(id, contact) {
 // Delete Members
 function deleteMemberFunction(groupId, memberId) {
     // fetch(`http://127.0.0.1:5000/api/groups/${groupId}/remove-member/${memberId}/`, {
-    fetch(`http://127.0.0.1:5000/remove_member_from_group/`, {
+    fetch(`http://127.0.0.1:5000/remove_member_from_group/${groupId}/${memberId}`, {
         method: 'DELETE', 
         headers: {
             'Content-Type': 'application/json',
@@ -489,7 +489,8 @@ function deleteMemberFunction(groupId, memberId) {
 }
 
 function deleteGroupFunction(groupId) {
-    fetch(`http://127.0.0.1:5000/api/groups/${groupId}/delete/`, {
+    // fetch(`http://127.0.0.1:5000/api/groups/${groupId}/delete/`, {
+    fetch(`http://127.0.0.1:5000/delete_group/${groupId}/`, {
         method: 'DELETE', 
         headers: {
             'Content-Type': 'application/json',
@@ -523,7 +524,7 @@ function deleteGroupFunction(groupId) {
 }
 
 function leaveGroupFunction(groupId) {
-    fetch(`http://127.0.0.1:5000/api/groups/${groupId}/leave/`, {
+    fetch(`http://127.0.0.1:5000/leave_group/${groupId}/${user.id}`, {
         method: 'DELETE', 
         headers: {
             'Content-Type': 'application/json',

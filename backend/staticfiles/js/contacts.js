@@ -123,7 +123,7 @@ document.getElementById('list_contacts').addEventListener('click', function () {
             const contactList = document.getElementById('contact-list'); // Asegúrate de tener un contenedor en tu HTML con este ID
             contactList.innerHTML = ''; // Limpiar cualquier contenido previo
 
-            data.forEach(contact => {
+            data['contacts'].forEach(contact => {
                 const listItem = document.createElement('li');
                 listItem.textContent = `${contact.contact_name}`;
 
@@ -151,7 +151,7 @@ document.getElementById('list_contacts').addEventListener('click', function () {
 });
 
 function deleteGroupFunction(contactId) {
-    fetch(`http://127.0.0.1:5000/api/contacts/${contactId}/delete/`, {
+    fetch(`http://127.0.0.1:5000/contacts/${contactId}/delete/`, {
         method: 'DELETE', 
         headers: {
             'Content-Type': 'application/json',

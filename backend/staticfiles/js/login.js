@@ -25,16 +25,17 @@ document.getElementById('btn').addEventListener('click', function () {
             return response.json();
         })
         .then(data => {
-            if(rememberMe) {
-                // Si "Remember Me" está marcado, guarda en localStorage
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('userData', JSON.stringify(data.user));
-            } else {
-                // Si "Remember Me" no está marcado, guarda en sessionStorage
-                sessionStorage.setItem('authToken', data.token);
-                sessionStorage.setItem('userData', JSON.stringify(data.user));
-            }
-            console.log("sessionStorage", sessionStorage)
+            // if(rememberMe) {
+            //     // Si "Remember Me" está marcado, guarda en localStorage
+            //     localStorage.setItem('authToken', data.token);
+            //     localStorage.setItem('userData', JSON.stringify(data.user));
+            // } else {
+            //     // Si "Remember Me" no está marcado, guarda en sessionStorage
+            //     sessionStorage.setItem('authToken', data.token);
+            //     sessionStorage.setItem('userData', JSON.stringify(data.user));
+            // }
+            sessionStorage.setItem('authToken', data.token);
+            sessionStorage.setItem('userData', JSON.stringify(data.user));
             
             // Redirigir al usuario
             window.location.href = '/';
