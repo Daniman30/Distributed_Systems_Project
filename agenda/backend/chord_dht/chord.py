@@ -13,10 +13,10 @@ TCP_PORT = 8000 #puerto de escucha del socket TCP
 UDP_PORT = 8888 #puerto de escucha del socket UDP
 
 class ChordNode:
-    def __init__(self, ip: str, port_tcp=8000,port_udp =8888):
+    def __init__(self):
         self.ip = get_ip()
-        self.port_udp = port_udp
-        self.port_tcp = port_tcp
+        self.port_udp = UDP_PORT
+        self.port_tcp = TCP_PORT
         self.id = self._generate_id()
         self.reference= NodeReference(self.ip, self.port_tcp)
         self.predecessor = None
@@ -221,7 +221,7 @@ class ChordNode:
     
         while True:
           data_recv = s.recvfrom(1024)
-          thread = threading.Thread(target=self._handle_broadcast, args=(data_recv,))#!falta el handle
+          thread = threading.Thread(target=self.handle_broadcast, args=(data_recv,))#!falta el handle
           thread.start()
 
     def start_udp_server(self):

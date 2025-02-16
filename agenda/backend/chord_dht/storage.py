@@ -72,6 +72,7 @@ class GroupMember(Base):
     __tablename__ = 'group_members'
     id = Column(Integer, primary_key=True, autoincrement=True)
     group_id = Column(Integer, ForeignKey('groups.id'), nullable=False)
+    admin_id = Column(Integer, ForeignKey('users.id'), nullable=True)  # ID del administrador que añadió al miembro
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     role = Column(Enum('admin', 'member', name='role_types'), nullable=False, default='member')  # Rol del miembro
     group = relationship('Group', back_populates='members')
@@ -310,3 +311,50 @@ class Database:
         self.session.add(agenda_entry)
         self.session.commit()
         return True
+    def list_personal_agenda(self, user_id: int) -> list:
+        """Lista todos los eventos de un usuario con su nombre y hora."""
+        events = self.session.query(Event).filter(
+            (Event.owner_id == user_id) |  # Eventos creados por el usuario
+            (Event.id.in_(  # Eventos en los que el usuario está invitado
+                self.session.query(UserAgenda.event_id).filter_by(user_id=user_id)
+            ))
+        ).all()
+
+        # Formatear la salida
+        agenda = []
+        for event in events:
+            agenda.append({
+                'id': event.id,
+                'name': event.name,
+                'date': event.date.strftime('%Y-%m-%d %H:%M:%S'),  # Formato de fecha y hora
+                'privacy': event.privacy,
+                'status': event.status
+            })
+
+        return agenda
+    def list_group_agenda(self, group_id: int, user_id: int) -> list:
+        """Lista todos los eventos de un grupo al que pertenece el usuario."""
+        # Verificar si el usuario es miembro del grupo
+        is_member = self.session.query(GroupMember).filter_by(
+            group_id=group_id, user_id=user_id
+        ).first() is not None
+
+        if not is_member:
+            return []  # El usuario no es miembro del grupo
+
+        # Obtener los eventos del grupo
+        events = self.session.query(Event).filter_by(group_id=group_id).all()
+
+        # Formatear la salida
+        agenda = []
+        for event in events:
+            agenda.append({
+                'id': event.id,
+                'name': event.name,
+                'date': event.date.strftime('%Y-%m-%d %H:%M:%S'),  # Formato de fecha y hora
+                'privacy': event.privacy,
+                'status': event.status,
+                'owner_id': event.owner_id
+            })
+
+        return agenda
