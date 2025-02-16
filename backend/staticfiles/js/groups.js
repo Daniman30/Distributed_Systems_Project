@@ -3,16 +3,13 @@ import {getUserId} from './contacts.js';
 import {adjustDateByDays} from './calendar.js';
 import {manipulate} from './calendar.js';
 
-const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+console.log("sessionStorage", sessionStorage)
+console.log("localStorage", localStorage)
 
-if (userData) {
-    // Convertir los datos del formato JSON a un objeto JavaScript
-    const user = JSON.parse(userData);
-    console.log('Usuario registrado:', user);
-} else {
-    console.log('No hay usuario registrado.');
-}
+const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+const userData = sessionStorage.getItem('userData');
+const user = JSON.parse(userData);
+
 
 window.globalVariable = '';
 
@@ -34,18 +31,21 @@ document.getElementById('btn_create_group').addEventListener('click', function (
         data = {
             name: GroupName,
             description: GroupDescription,
-            is_hierarchical: true
+            is_hierarchical: true,
+            owner_id: user.id
         };
     } else {
         data = {
             name: GroupName,
             description: GroupDescription,
-            is_hierarchical: false
+            is_hierarchical: false,
+            owner_id: user.id
         };
     }
 
     // Enviar los datos al endpoint
-    fetch('http://127.0.0.1:8000/api/groups/', {
+    // fetch('http://127.0.0.1:8000/api/groups/', {
+    fetch('http://127.0.0.1:5000/create_group/', {
         method: 'POST', 
         headers: {
             'Content-Type': 'application/json',
@@ -74,7 +74,8 @@ document.getElementById('btn_create_group').addEventListener('click', function (
 // List Groups
 document.getElementById('list_groups').addEventListener('click', function () {
     // Realizar la solicitud GET al endpoint de grupos
-    fetch('http://127.0.0.1:8000/api/groups/', {
+    // fetch('http://127.0.0.1:8000/api/groups/', {
+    fetch(`http://127.0.0.1:5000/list_groups/${user.id}/`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -98,7 +99,7 @@ document.getElementById('list_groups').addEventListener('click', function () {
             const groupList = document.getElementById('group-list'); // Asegúrate de tener un contenedor en tu HTML con este ID
             groupList.innerHTML = ''; // Limpiar cualquier contenido previo
 
-            data.forEach(group => {
+            data.groups.forEach(group => {
                 const Item = document.createElement('li');
                 
                 // Nombre del grupo
@@ -112,11 +113,38 @@ document.getElementById('list_groups').addEventListener('click', function () {
                 infoCircle.className = 'fas fa-info-circle openMenu';
                 infoCircle.style.paddingLeft = '5px'; // Espacio entre el nombre y el ícono
 
-                // Agregar un evento de clic al ícono
-                infoCircle.addEventListener('click', function () {
-                    openGroupInfoMenu(group); // Llamar a la función para abrir el menú flotante
-                });
+                // // Agregar un evento de clic al ícono
+                // infoCircle.addEventListener('click', function () {
+                //     openGroupInfoMenu(group); // Llamar a la función para abrir el menú flotante
+                // });
                 
+                infoCircle.addEventListener('click', function () {
+                    fetch(`http://127.0.0.1:5000/list_members/${group.id}/`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Token ${token}`, // Token para autenticación
+                        },
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                // Manejar errores si la respuesta no es exitosa
+                                return response.json().then(err => {
+                                    throw new Error(`Error al obtener grupos: ${err.detail || err}`);
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            openGroupInfoMenu(group, data); // Llamar a la función para abrir el menú flotante
+                        })
+                        .catch(error => {
+                            // Manejar errores
+                            console.error('Error:', error.message);
+                            alert(error.message);
+                        });
+                });
+
                 // Crear divider
                 const divider = document.createElement('hr')
                 divider.className = 'sidebar-divider'
@@ -139,7 +167,7 @@ document.getElementById('list_groups').addEventListener('click', function () {
 
 
 // List Group Details
-function openGroupInfoMenu(group) {
+function openGroupInfoMenu(group, members) {
     // menu7 abierto
     const menu = document.getElementById('menu7');
     menu.innerHTML = ''; // Limpiar cualquier contenido previo
@@ -171,7 +199,7 @@ function openGroupInfoMenu(group) {
     const membersList = document.createElement('ul');
     membersList.className = 'get-list'
     // membersList.textContent = 'Members:'
-    group.members.forEach(member => {
+    members['members'].forEach(member => {
         const memberList = document.createElement('li');
         memberList.textContent = `Member: ${searchId(member)}`;
         membersList.appendChild(memberList)
@@ -314,7 +342,8 @@ function addMemberFunction(id) {
     const menu = document.getElementById('menu8');
 
 
-    fetch('http://127.0.0.1:8000/api/contacts/', {
+    // fetch('http://127.0.0.1:8000/api/contacts/', {
+    fetch('http://127.0.0.1:5000/contacts/', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -388,9 +417,11 @@ function addMemberEndpoint(id, contact) {
         .then(idUser => {
             const memberData = {
                 group_id: id,
-                user_id: idUser
+                user_id: idUser,
+                role: 'member'
             }
-            fetch('http://127.0.0.1:8000/api/groups/add-member/', {
+            // fetch('http://127.0.0.1:8000/api/groups/add-member/', {
+            fetch('http://127.0.0.1:5000/add_member_to_group/', {
                 method: 'POST', 
                 headers: {
                     'Content-Type': 'application/json',
@@ -422,7 +453,8 @@ function addMemberEndpoint(id, contact) {
 
 // Delete Members
 function deleteMemberFunction(groupId, memberId) {
-    fetch(`http://127.0.0.1:8000/api/groups/${groupId}/remove-member/${memberId}/`, {
+    // fetch(`http://127.0.0.1:5000/api/groups/${groupId}/remove-member/${memberId}/`, {
+    fetch(`http://127.0.0.1:5000/remove_member_from_group/`, {
         method: 'DELETE', 
         headers: {
             'Content-Type': 'application/json',
@@ -457,7 +489,7 @@ function deleteMemberFunction(groupId, memberId) {
 }
 
 function deleteGroupFunction(groupId) {
-    fetch(`http://127.0.0.1:8000/api/groups/${groupId}/delete/`, {
+    fetch(`http://127.0.0.1:5000/api/groups/${groupId}/delete/`, {
         method: 'DELETE', 
         headers: {
             'Content-Type': 'application/json',
@@ -491,7 +523,7 @@ function deleteGroupFunction(groupId) {
 }
 
 function leaveGroupFunction(groupId) {
-    fetch(`http://127.0.0.1:8000/api/groups/${groupId}/leave/`, {
+    fetch(`http://127.0.0.1:5000/api/groups/${groupId}/leave/`, {
         method: 'DELETE', 
         headers: {
             'Content-Type': 'application/json',
@@ -527,7 +559,7 @@ function leaveGroupFunction(groupId) {
 
 function agendaGroup1(groupID) {
     
-    fetch(`http://127.0.0.1:8000/api/groups/${groupID}/agendas`, {
+    fetch(`http://127.0.0.1:5000/api/groups/${groupID}/agendas`, {
         method: 'GET', 
         headers: {
             'Content-Type': 'application/json',
@@ -554,7 +586,7 @@ function agendaGroup1(groupID) {
 }
 
 function agendaMember1() {
-    fetch(`http://127.0.0.1:8000/api/agendas`, {
+    fetch(`http://127.0.0.1:5000/api/agendas`, {
         method: 'GET', 
         headers: {
             'Content-Type': 'application/json',

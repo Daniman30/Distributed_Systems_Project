@@ -11,7 +11,7 @@ document.getElementById('btn').addEventListener('click', function () {
     };
 
     // Enviar los datos al endpoint
-    fetch('http://127.0.0.1:8000/log_in/', {
+    fetch('http://127.0.0.1:5000/log_in/', {
         method: 'POST', 
         headers: {
             'Content-Type': 'application/json',
@@ -34,9 +34,10 @@ document.getElementById('btn').addEventListener('click', function () {
                 sessionStorage.setItem('authToken', data.token);
                 sessionStorage.setItem('userData', JSON.stringify(data.user));
             }
+            console.log("sessionStorage", sessionStorage)
             
             // Redirigir al usuario
-            window.location.href = '/templates/index.html';
+            window.location.href = '/';
         })
         .catch(error => {
             console.error('Error:', error);

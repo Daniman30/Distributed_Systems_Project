@@ -1,4 +1,8 @@
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+const userData = sessionStorage.getItem('userData');
+
+// Convierte el string JSON a un objeto JavaScript
+const userDataObject = JSON.parse(userData);
 window.globalVariable = ""
 
 let date = new Date();
@@ -18,15 +22,14 @@ const months = [
 
 // Function to generate the calendar
 export const manipulate = async () => {
-    console.log("global var:", window.globalVariable)
     return new Promise(async (resolve, reject) => {
         try {
-            let dayone = new Date(year, month, 1).getDay();
-            let lastdate = new Date(year, month + 1, 0).getDate();
-            let dayend = new Date(year, month, lastdate).getDay();
-            let monthlastdate = new Date(year, month, 0).getDate();
+            let dayone = new Date(year, month, 1).getDay(); // Posicion en la semana del primer dia del mes contando el 0
+            let lastdate = new Date(year, month + 1, 0).getDate();// Cantidad de dias del mes actual
+            let dayend = new Date(year, month, lastdate).getDay(); // Posicion en la semana del ultimo dia del mes contando el 0
+            let monthlastdate = new Date(year, month, 0).getDate(); // Cantidad de dias del mes anterior
             let lit = "";
-
+            
             // Agregar las fechas del mes anterior
             for (let i = dayone; i > 0; i--) {
                 lit += `<li class="inactive">${monthlastdate - i + 1}</li>`;
@@ -35,7 +38,8 @@ export const manipulate = async () => {
             // Agregar las fechas del mes actual
             let promises = [];
             for (let i = 1; i <= lastdate; i++) {
-                let isToday = i === date.getDate()
+                let isToday = 
+                    i === date.getDate()
                     && month === new Date().getMonth()
                     && year === new Date().getFullYear()
                     ? "active"
@@ -47,17 +51,32 @@ export const manipulate = async () => {
 
                 // Solicitar eventos para el día actual
                 const dayString = `${year}-${month + 1}-${dayI}`;
-                console.log("dayString", dayString)
+                const fullDate = new Date(dayString)
+                const noHours = fullDate.toISOString().split('T')[0]
+                // const adjustDate = `${fixMonth(adjustDateByDays(dayString, 1))}`
                 promises.push(
-                    dailyEvents(adjustDateByDays(dayString, 1), window.globalVariable).then(({ personalEvents, groupEvents }) => {
-                        const dayElement = document.querySelector(`#day-${year}-${month + 1}-${dayI}`);
+                    // dailyEvents(adjustDateByDays(dayString, 1), window.globalVariable).then(({ personalEvents, groupEvents }) => {
+                    //     const dayElement = document.querySelector(`#day-${year}-${month + 1}-${dayI}`);
+                    //     if (dayElement) {
+                    //         let eventsHTML = "";
+                    //         personalEvents.forEach(event => {
+                    //             eventsHTML += `<p class="event-title">${event.title}</p>`;
+                    //         });
+                    //         groupEvents.forEach(event => {
+                    //             eventsHTML += `<p class="event-title2">${event.title}</p>`;
+                    //         });
+                    //         dayElement.innerHTML += eventsHTML; // Añade los eventos sin reemplazar
+                    //     }
+                    // }).catch(error => {
+                    //     console.error('Error:', error.message);
+                    // })
+                    // dailyEvents(adjustDateByDays(dayString, 1)).then((dayEvents) => {
+                    dailyEvents(noHours).then((dayEvents) => {
+                        const dayElement = document.querySelector(`#day-${dayString}`);
                         if (dayElement) {
                             let eventsHTML = "";
-                            personalEvents.forEach(event => {
-                                eventsHTML += `<p class="event-title">${event.title}</p>`;
-                            });
-                            groupEvents.forEach(event => {
-                                eventsHTML += `<p class="event-title2">${event.title}</p>`;
+                            dayEvents.forEach(event => {
+                                eventsHTML += `<p class="event-title">${event.name}</p>`;
                             });
                             dayElement.innerHTML += eventsHTML; // Añade los eventos sin reemplazar
                         }
@@ -168,10 +187,12 @@ export function dailyEvents(day, url) {
     var urlFinal
     if (url) {
         if (url !== "") {
-            urlFinal = `http://127.0.0.1:8000/api/events/${url}`
+            // urlFinal = 'http://127.0.0.1:5000/api/events/${url}'
+            urlFinal = `http://127.0.0.1:5000/list_events/${userDataObject.id}`
         }
     } else {
-        urlFinal = 'http://127.0.0.1:8000/api/events/'
+        // urlFinal = 'http://127.0.0.1:5000/api/events/'
+        urlFinal = `http://127.0.0.1:5000/list_events/${userDataObject.id}`
     }
     return fetch(urlFinal, {
         method: 'GET',
@@ -189,62 +210,70 @@ export function dailyEvents(day, url) {
             return response.json();
         })
         .then(data => {
-            const targetDate = new Date(fixHourZone(`${day}T00:00:00Z`, -19)); // Forzar formato UTC
-            const targetDateEnd = new Date(fixHourZone(`${day}T00:00:00Z`, 5));
+            const dayEvents = data.events.filter(event => {
+                console.log("Dia en el calendario", day, "Dia del evento", event.date)
+                return event.date == day
+            })
+            // const targetDate = new Date(fixHourZone(`${day}T00:00:00Z`, -19)); // Forzar formato UTC
+            // const targetDateEnd = new Date(fixHourZone(`${day}T00:00:00Z`, 5));
 
-            console.log("groupEvents", data.group_events);
-            console.log()
+            // console.log("DATA", data);
+            // console.log()
             
-            const groupEvents = data.group_events.filter(event => {
-                const start = new Date(fixHourZone(event.start_time, 5));
-                const end = new Date(fixHourZone(event.end_time, 5));
+            // const groupEvents = data.events.filter(event => {
+            //     console.log("EVENTO", event)
+            //     // Object { date: "2025-02-15", group_id: null, id: 3, name: "asd", owner_id: 11, privacy: "public", status: "pending" }
+            //     const start = new Date(fixHourZone(event.start_time, 5));
+            //     const end = new Date(fixHourZone(event.end_time, 5));
 
-                const initCalendarDay = dateToInt(targetDate);
-                const endCalendarDay = dateToInt(targetDateEnd);
-                const normalizedStart = dateToInt(start);
-                const normalizedEnd = dateToInt(end);
+            //     const initCalendarDay = dateToInt(targetDate);
+            //     const endCalendarDay = dateToInt(targetDateEnd);
+            //     const normalizedStart = dateToInt(start);
+            //     const normalizedEnd = dateToInt(end);
 
-                console.log("testing", start)
-                console.log("testing", end)
-                console.log("----------------------------")
+            //     console.log("testing", start)
+            //     console.log("testing", end)
+            //     console.log("----------------------------")
 
-                // Empieza y termina antes
-                const case1 = (initCalendarDay >= normalizedStart && initCalendarDay >= normalizedEnd)
+            //     // Empieza y termina antes
+            //     const case1 = (initCalendarDay >= normalizedStart && initCalendarDay >= normalizedEnd)
 
-                // Empieza y termina despues
-                const case2 = (endCalendarDay <= normalizedStart && endCalendarDay <= normalizedEnd)
+            //     // Empieza y termina despues
+            //     const case2 = (endCalendarDay <= normalizedStart && endCalendarDay <= normalizedEnd)
                 
-                return !(case1 || case2)
-                // const start = new Date(event.start_time);
-                // const end = new Date(event.end_time);
+            //     return !(case1 || case2)
+            //     // const start = new Date(event.start_time);
+            //     // const end = new Date(event.end_time);
 
-                // const normalizedTarget = Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-                // const normalizedStart = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
-                // const normalizedEnd = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+            //     // const normalizedTarget = Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+            //     // const normalizedStart = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+            //     // const normalizedEnd = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
 
-                // return normalizedTarget >= normalizedStart && normalizedTarget <= normalizedEnd;
-            });
+            //     // return normalizedTarget >= normalizedStart && normalizedTarget <= normalizedEnd;
+            // });
 
-            const personalEvents = data.personal_events.filter(event => {
-                const start = new Date(fixHourZone(event.start_time, 5));
-                const end = new Date(fixHourZone(event.end_time, 5));
+            // const personalEvents = data.events.filter(event => {
+            //     const start = new Date(fixHourZone(event.start_time, 5));
+            //     const end = new Date(fixHourZone(event.end_time, 5));
 
-                const initCalendarDay = dateToInt(targetDate);
-                const endCalendarDay = dateToInt(targetDateEnd);
-                const normalizedStart = dateToInt(start);
-                const normalizedEnd = dateToInt(end);
+            //     const initCalendarDay = dateToInt(targetDate);
+            //     const endCalendarDay = dateToInt(targetDateEnd);
+            //     const normalizedStart = dateToInt(start);
+            //     const normalizedEnd = dateToInt(end);
 
-                // Empieza y termina antes
-                const case1 = (initCalendarDay >= normalizedStart && initCalendarDay >= normalizedEnd)
+            //     // Empieza y termina antes
+            //     const case1 = (initCalendarDay >= normalizedStart && initCalendarDay >= normalizedEnd)
 
-                // Empieza y termina despues
-                const case2 = (endCalendarDay <= normalizedStart && endCalendarDay <= normalizedEnd)
+            //     // Empieza y termina despues
+            //     const case2 = (endCalendarDay <= normalizedStart && endCalendarDay <= normalizedEnd)
                 
-                return !(case1 || case2)
-            });
+            //     return !(case1 || case2)
+            // });
             
 
-            return { personalEvents, groupEvents };
+            // return { personalEvents, groupEvents };
+            console.log("Eventos del dia", dayEvents)
+            return dayEvents
         })
         .catch(error => {
             console.error('Error:', error.message);
@@ -256,6 +285,18 @@ export function adjustDateByDays(dateString, days) {
     const date = new Date(dateString);
     date.setDate(date.getDate() + days); // Sumar o restar días
     return date.toISOString().split('T')[0]; // Retornar solo la parte de la fecha
+}
+
+function fixMonth(EntryDate) {
+    const dateString = `${EntryDate}`
+    const datefix = dateString.split('-')
+    const dayfix = datefix[2]
+    let monthfix = datefix[1]
+    const yearfix = datefix[0]
+    if (datefix[1][0] == 0) {
+        monthfix = datefix[1][1]
+    }
+    return `${yearfix}-${monthfix}-${dayfix}`
 }
 
 function fixHourZone(day, hours) {

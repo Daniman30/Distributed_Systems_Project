@@ -20,7 +20,7 @@ document.getElementById('btn').addEventListener('click', function () {
     };
 
     // Enviar los datos al endpoint
-    fetch('http://127.0.0.1:8000/sign_up/', {
+    fetch('http://127.0.0.1:5000/sign_up/', {
         method: 'POST', 
         headers: {
             'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ document.getElementById('btn').addEventListener('click', function () {
             }
 
             // Redirigir al usuario o realizar otra acción
-            window.location.href = '/templates/index.html';
+            window.location.href = '/';
         })
         .catch(error => {
             console.error('Error:', error);

@@ -1,4 +1,3 @@
-
 import {manipulate} from './calendar.js';
 
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
@@ -33,18 +32,28 @@ document.getElementById('btn_create_event').addEventListener('click', async func
         title: eventName,
         start_time: `${eventDateInit}T${eventTimeInit}`,
         end_time: `${eventDateEnd}T${eventTimeEnd}`,
-        description: eventDescription || null,
+        owner_id: user.id,
         privacy: eventPrivacy,
         group: groupEvent || null,
-        participants: numbers.length > 0 ? numbers : null
+        description: eventDescription || null,
+        participants: numbers.length > 0 ? numbers : null,
     };
+
+    // {
+    //     "name": "Reunión de trabajo",
+    //     "date": "2023-12-25",
+    //     "owner_id": 123,
+    //     "privacy": "private",
+    //     "group_id": 456  // Opcional
+    // }
 
     const dataF = Object.fromEntries(Object.entries(rawData).filter(([_, value]) => value !== null));
     console.log("userdata", user)
 
     try {
         // Enviar los datos al endpoint
-        const response = await fetch('http://127.0.0.1:8000/api/events/create/', {
+        // const response = await fetch('http://127.0.0.1:5000/api/events/create/', {
+        const response = await fetch('http://127.0.0.1:5000/create_event/', {
             method: 'POST', 
             headers: {
                 'Content-Type': 'application/json',
@@ -73,7 +82,7 @@ document.getElementById('btn_create_event').addEventListener('click', async func
 // View Event
 async function viewEvent(idEvent) {
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/events/pending/', {
+        const response = await fetch(`http://127.0.0.1:5000/list_events_pending/${userDataObject.id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -104,7 +113,8 @@ async function viewEvent(idEvent) {
 
 
 document.getElementById('alertsDropdown').addEventListener('click', function () {
-    return fetch('http://127.0.0.1:8000/api/events/pending/', {
+    // return fetch('http://127.0.0.1:5000/api/events/pending/', {
+    return fetch(`http://127.0.0.1:5000/list_events_pending/${userDataObject.id}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -261,7 +271,8 @@ function closeMenu() {
 
 document.getElementById('acceptBtn').addEventListener('click', function () {
     const idEventUrl =  document.getElementById('idEvent')
-    return fetch(`http://127.0.0.1:8000/api/events/${idEventUrl.textContent}/accept/`, {
+    // return fetch(`http://127.0.0.1:5000/api/events/${idEventUrl.textContent}/accept/`, {
+    return fetch(`http://127.0.0.1:5000/confirm_event/${idEventUrl.textContent}/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -292,7 +303,8 @@ document.getElementById('acceptBtn').addEventListener('click', function () {
 document.getElementById('declineBtn').addEventListener('click', function () {
     const idEventUrl =  document.getElementById('idEvent')
     console.log("Evento a cancelar", idEventUrl.textContent)
-    fetch(`http://127.0.0.1:8000/api/events/${idEventUrl.textContent}/cancel/`, {
+    // fetch(`http://127.0.0.1:5000/api/events/${idEventUrl.textContent}/cancel/`, {
+    fetch(`http://127.0.0.1:5000/cancel_event/${idEventUrl.textContent}/`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -317,8 +329,4 @@ document.getElementById('declineBtn').addEventListener('click', function () {
             console.error('Error:', error.message);
             alert(error.message);
         });
-});
-
-document.getElementsByClassName("event-title").addEventListener('click', function() {
-
 });

@@ -43,6 +43,7 @@ class Contact(Base):
     __tablename__ = 'contacts'
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    owner_id = Column(Integer, nullable=False)
     contact_name = Column(String, nullable=False)
     user = relationship('User', back_populates='contacts')
 
@@ -111,21 +112,23 @@ class Database:
             self.session.rollback()
             return False  # El email ya está registrado
 
-    def login_user(self, email: str, password: str) -> dict:
+    def login_user(self, username: str, password: str) -> dict:
         """
         Inicia sesión de un usuario con autenticación segura.
         """
-        user = self.session.query(User).filter_by(email=email).first()
+        user = self.session.query(User).filter_by(name=username).first()
         if user and user.check_password(password):
             return {'id': user.id, 'name': user.name}
         return None
 
     # Métodos para contactos
-    def add_contact(self, user_id: int, contact_name: str) -> bool:
+    def add_contact(self, user_id: int, contact_name: str, owner_id: int) -> bool:
         """
         Agrega un contacto a un usuario.
         """
-        contact = Contact(user_id=user_id, contact_name=contact_name)
+        print("Datos de contacto: ", user_id, contact_name, owner_id)
+        contact = Contact(user_id=user_id, contact_name=contact_name, owner_id=owner_id)
+        print("Contacto: ", contact.owner_id, contact.id, contact.contact_name)
         self.session.add(contact)
         try:
             self.session.commit()
@@ -138,7 +141,12 @@ class Database:
         """
         Lista los contactos de un usuario.
         """
-        contacts = self.session.query(Contact).filter_by(user_id=user_id).all()
+        contacts = self.session.query(Contact).all()
+        print("id", [contact.id for contact in contacts])
+        print("user_id", [contact.user_id for contact in contacts])
+        print("contact_name", [contact.contact_name for contact in contacts])
+        print("contact_name", [contact.owner_id for contact in contacts])
+        print("user.name", [contact.user.name for contact in contacts])
         return [contact.contact_name for contact in contacts]
 
     # Métodos para eventos
@@ -242,6 +250,17 @@ class Database:
             ))
         ).all()
         return events
+    
+    def list_events_pending(self, user_id: int) -> list:
+        """
+        Lista los eventos de un usuario (personales y grupales).
+        """
+        events = self.session.query(Event).filter(
+            ((Event.owner_id == user_id) | (Event.group_id.in_(
+                self.session.query(GroupMember.group_id).filter_by(user_id=user_id)
+            ))) & (Event.status == 'pending')
+        ).all()
+        return events
 
     # Métodos para grupos
     def create_group(self, name: str, owner_id: int) -> bool:
@@ -285,8 +304,15 @@ class Database:
         """
         Lista los grupos de un usuario.
         """
-        groups = self.session.query(Group).join(GroupMember).filter(GroupMember.user_id == user_id).all()
+        groups = self.session.query(Group).filter(Group.owner_id == user_id).all()
         return [(group.id, group.name) for group in groups]
+    
+    def list_members(self, group_id: int) -> list:
+        """
+        Lista los miembros de un grupo
+        """
+        members = self.session.query(GroupMember).filter(GroupMember.group_id == group_id).all()
+        return [member.id for member in members]
 
     # Métodos auxiliares
     def _has_event_conflict(self, user_id: int, event_date: datetime) -> bool:
@@ -311,6 +337,7 @@ class Database:
         self.session.add(agenda_entry)
         self.session.commit()
         return True
+<<<<<<< HEAD
     def list_personal_agenda(self, user_id: int) -> list:
         """Lista todos los eventos de un usuario con su nombre y hora."""
         events = self.session.query(Event).filter(
@@ -358,3 +385,11 @@ class Database:
             })
 
         return agenda
+=======
+    
+    def getUserID(self, username):
+        user = self.session.query(User).filter_by(name=username).first()
+        if user:
+            return user.id
+        return None
+>>>>>>> 09d3181ea90c63f6187c75558090fec73b084083
