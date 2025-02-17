@@ -1,4 +1,6 @@
 import {manipulate} from './calendar.js';
+import {selectUserEvent} from './groups.js';
+import {selectGroupEvent} from './groups.js';
 
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
@@ -15,13 +17,14 @@ document.getElementById('btn_create_event').addEventListener('click', async func
     // Obtener los valores de los inputs
     const eventName = document.getElementById('EventName').value;
     const eventDateInit = document.getElementById('EventDateInit').value;
-    const eventTimeInit = document.getElementById('EventTimeInit').value;
+    // const eventTimeInit = document.getElementById('EventTimeInit').value;
     // const eventDateEnd = document.getElementById('EventDateEnd').value;
     // const eventTimeEnd = document.getElementById('EventTimeEnd').value;
     // const eventDescription = document.getElementById('EventDescription').value;
     const eventPrivacyCheck = document.getElementById('checkPrivacy').checked;
     const eventPrivacy = eventPrivacyCheck ? 'private' : 'public';
     const groupEvent = document.getElementById('EventGroup').value;
+    const userEvent = document.getElementById('EventUser').value;
     // const participantsEvent = `${document.getElementById('EventParticipants').value}, ${user.id}`;
 
     // const numbers = participantsEvent
@@ -30,29 +33,17 @@ document.getElementById('btn_create_event').addEventListener('click', async func
 
     const rawData = {
         title: eventName,
-        start_time: `${eventDateInit}T${eventTimeInit}`,
-        // end_time: `${eventDateEnd}T${eventTimeEnd}`,
+        start_time: `${eventDateInit}`,
         owner_id: user.id,
         privacy: eventPrivacy,
-        group: groupEvent || null,
-        // description: eventDescription || null,
-        // participants: numbers.length > 0 ? numbers : null,
+        group: groupEvent || userEvent || null
     };
-
-    // {
-    //     "name": "Reunión de trabajo",
-    //     "date": "2023-12-25",
-    //     "owner_id": 123,
-    //     "privacy": "private",
-    //     "group_id": 456  // Opcional
-    // }
 
     const dataF = Object.fromEntries(Object.entries(rawData).filter(([_, value]) => value !== null));
     console.log("userdata", user)
 
     try {
         // Enviar los datos al endpoint
-        // const response = await fetch('http://127.0.0.1:5000/api/events/create/', {
         const response = await fetch('http://127.0.0.1:5000/create_event/', {
             method: 'POST', 
             headers: {
@@ -79,10 +70,20 @@ document.getElementById('btn_create_event').addEventListener('click', async func
     }
 });
 
+// Boton de Select Group en Create a new Event
+document.getElementById('btn_select_group').addEventListener('click', function(){
+    const idUserEvent = selectGroupEvent(user.id); // Llamar a la función para abrir el menú flotante
+})
+
+// Boton de Select Contact en Create a new Event
+document.getElementById('btn_select_contact').addEventListener('click', function(){
+    const idUserEvent = selectUserEvent(user.id); // Llamar a la función para abrir el menú flotante
+})
+
 // View Event
 async function viewEvent(idEvent) {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/list_events_pending/${userDataObject.id}`, {
+        const response = await fetch(`http://127.0.0.1:5000/list_events_pending/${user.id}/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -114,7 +115,7 @@ async function viewEvent(idEvent) {
 
 document.getElementById('alertsDropdown').addEventListener('click', function () {
     // return fetch('http://127.0.0.1:5000/api/events/pending/', {
-    return fetch(`http://127.0.0.1:5000/list_events_pending/${userDataObject.id}`, {
+    return fetch(`http://127.0.0.1:5000/list_events_pending/${user.id}/`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -140,66 +141,134 @@ document.getElementById('alertsDropdown').addEventListener('click', function () 
             menuEvent.appendChild(eventH6)
 
 
-            data.forEach(element => {
+            data['events'].forEach(singleEvent => {
                 const Aelement = document.createElement('a');
                 Aelement.classList = ["dropdown-item d-flex align-items-center"];
                 Aelement.id = "Aelement"
                 Aelement.setAttribute('data-menu', "menu9")
 
-                Aelement.addEventListener('click', function (event) {
-                    event.preventDefault(); // Previene el comportamiento predeterminado del enlace
+                Aelement.addEventListener('click', function () {
                     
-                    viewEvent(element.id)
-                        .then(eventDataFunc => {
-                            const eventData = eventDataFunc
+                    // viewEvent(event.id)
+                    //     .then(eventDataFunc => {
+                    //         const eventData = eventDataFunc
 
-                            const eventTitle = document.getElementById('EventTitle');
-                            eventTitle.textContent = eventData.title;
+                    //         const eventTitle = document.getElementById('EventTitle');
+                    //         eventTitle.textContent = eventData.title;
 
-                            const descriptionEvent = document.getElementById('descriptionEvent');
-                            descriptionEvent.textContent = eventData.description
+                    //         const descriptionEvent = document.getElementById('descriptionEvent');
+                    //         descriptionEvent.textContent = eventData.description
 
-                            const startTimeEvent = document.getElementById('startTimeEvent');
-                            startTimeEvent.textContent = eventData.start_time
+                    //         const startTimeEvent = document.getElementById('startTimeEvent');
+                    //         startTimeEvent.textContent = eventData.start_time
 
-                            const endTimeEvent = document.getElementById('endTimeEvent');
-                            endTimeEvent.textContent = eventData.end_time
+                    //         const endTimeEvent = document.getElementById('endTimeEvent');
+                    //         endTimeEvent.textContent = eventData.end_time
 
-                            const privacyEvent = document.getElementById('privacyEvent');
-                            privacyEvent.textContent = eventData.privacy
+                    //         const privacyEvent = document.getElementById('privacyEvent');
+                    //         privacyEvent.textContent = eventData.privacy
 
-                            const idEventText = document.getElementById('idEvent');
-                            idEventText.textContent = eventData.id
+                    //         const idEventText = document.getElementById('idEvent');
+                    //         idEventText.textContent = eventData.id
 
-                            const groupIdEvent = document.getElementById('groupIdEvent');
-                            adminEvent.groupIdEvent = eventData.group
+                    //         const groupIdEvent = document.getElementById('groupIdEvent');
+                    //         adminEvent.groupIdEvent = eventData.group
 
-                            const participantIdsEvent = document.getElementById('participantIdsEvent');
-                            participantIdsEvent.textContent = eventData.participants
+                    //         const participantIdsEvent = document.getElementById('participantIdsEvent');
+                    //         participantIdsEvent.textContent = eventData.participants
 
-                            const confirmedParticipantsEvent = document.getElementById('confirmedParticipantsEvent');
-                            confirmedParticipantsEvent.textContent = eventData.accepted_by
+                    //         const confirmedParticipantsEvent = document.getElementById('confirmedParticipantsEvent');
+                    //         confirmedParticipantsEvent.textContent = eventData.accepted_by
                         
-                            // Identifica el menú a abrir
-                            const menuId = this.getAttribute('data-menu');
-                            const menu = document.getElementById(menuId);
+                    //         // Identifica el menú a abrir
+                    //         const menuId = this.getAttribute('data-menu');
+                    //         const menu = document.getElementById(menuId);
 
-                            // Muestra el overlay y el menú flotante correspondiente
-                            if (menu) {
-                                overlay.style.display = 'flex';
-                                menu.style.display = 'flex';
-                                activeMenu = menu; // Guarda el menú activo
-                            }
+                    //         // Muestra el overlay y el menú flotante correspondiente
+                    //         if (menu) {
+                    //             overlay.style.display = 'flex';
+                    //             menu.style.display = 'flex';
+                    //             activeMenu = menu; // Guarda el menú activo
+                    //         }
 
-                            // Evento para cerrar menús
-                            overlay.addEventListener('click', closeMenu);
-                            document.querySelectorAll('.closeMenu').forEach(button => {
-                                button.addEventListener('click', closeMenu);
-                            });
-                        })
-                        .catch(error => {
-                            console.error('Error al obtener el evento:', error.message);
-                        });                    
+                    //         // Evento para cerrar menús
+                    //         overlay.addEventListener('click', closeMenu);
+                    //         document.querySelectorAll('.closeMenu').forEach(button => {
+                    //             button.addEventListener('click', closeMenu);
+                    //         });
+                    //     })
+                    //     .catch(error => {
+                    //         console.error('Error al obtener el evento:', error.message);
+                    //     });                    
+
+
+                    const eventData = singleEvent
+
+                    const eventTitle = document.getElementById('EventTitle');
+                    eventTitle.textContent = eventData.name;
+
+                    const startTimeEvent = document.getElementById('startTimeEvent');
+                    startTimeEvent.textContent = eventData.date
+
+                    const privacyEvent = document.getElementById('privacyEvent');
+                    privacyEvent.textContent = eventData.privacy
+
+                    const idEventText = document.getElementById('idEvent');
+                    idEventText.textContent = eventData.id
+
+                    const groupIdEvent = document.getElementById('groupIdEvent');
+                    adminEvent.groupIdEvent = eventData.group_id
+                
+                    // Identifica el menú a abrir
+                    const menuId = this.getAttribute('data-menu');
+                    const menu = document.getElementById(menuId);
+
+                    // Muestra el overlay y el menú flotante correspondiente
+                    if (menu) {
+                        overlay.style.display = 'flex';
+                        menu.style.display = 'flex';
+                        activeMenu = menu; // Guarda el menú activo
+                    }
+
+                    // Evento para cerrar menús
+                    overlay.addEventListener('click', closeMenu);
+                    document.querySelectorAll('.closeMenu').forEach(button => {
+                        button.addEventListener('click', closeMenu);
+                    });
+
+                    // const eventData = event
+
+                    // const eventTitle = document.getElementById('EventTitle');
+                    // eventTitle.textContent = eventData.name;
+
+                    // const startTimeEvent = document.getElementById('startTimeEvent');
+                    // startTimeEvent.textContent = eventData.date
+
+                    // const privacyEvent = document.getElementById('privacyEvent');
+                    // privacyEvent.textContent = eventData.privacy
+
+                    // const idEventText = document.getElementById('idEvent');
+                    // idEventText.textContent = eventData.id
+
+                    // const groupIdEvent = document.getElementById('groupIdEvent');
+                    // adminEvent.groupIdEvent = eventData.group_id
+                
+                    // // Identifica el menú a abrir
+                    // const menuId = this.getAttribute('data-menu');
+                    // const menu = document.getElementById(menuId);
+
+                    // // Muestra el overlay y el menú flotante correspondiente
+                    // if (menu) {
+                    //     overlay.style.display = 'flex';
+                    //     menu.style.display = 'flex';
+                    //     activeMenu = menu; // Guarda el menú activo
+                    // }
+
+                    // // Evento para cerrar menús
+                    // overlay.addEventListener('click', closeMenu);
+                    // document.querySelectorAll('.closeMenu').forEach(button => {
+                    //     button.addEventListener('click', closeMenu);
+                    // });
                 });
 
                 menuEvent.appendChild(Aelement)
@@ -222,13 +291,13 @@ document.getElementById('alertsDropdown').addEventListener('click', function () 
                 const divElement4 = document.createElement('div');
                 divElement4.className = ["small text-gray-500"]
                 divElement4.id = "DateInitEventPending"
-                divElement4.textContent = `id ${element.id} - date: ${formatToReadableDate(element.start_time)}`
+                divElement4.textContent = `id ${singleEvent.id} - date: ${formatToReadableDate(singleEvent.date)}`
                 divElement3.appendChild(divElement4)
 
                 const spanElement = document.createElement('span');
                 spanElement.className = "font-weight-bold"
                 spanElement.id = "TitleEventPending"
-                spanElement.textContent = element.title
+                spanElement.textContent = singleEvent.name
                 divElement3.appendChild(spanElement)
 
                 
@@ -269,6 +338,7 @@ function closeMenu() {
     }
 }
 
+// Confirm Event
 document.getElementById('acceptBtn').addEventListener('click', function () {
     const idEventUrl =  document.getElementById('idEvent')
     // return fetch(`http://127.0.0.1:5000/api/events/${idEventUrl.textContent}/accept/`, {
@@ -300,6 +370,7 @@ document.getElementById('acceptBtn').addEventListener('click', function () {
         });
 });
 
+// Decline Event
 document.getElementById('declineBtn').addEventListener('click', function () {
     const idEventUrl =  document.getElementById('idEvent')
     console.log("Evento a cancelar", idEventUrl.textContent)

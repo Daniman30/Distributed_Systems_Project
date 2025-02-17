@@ -1,5 +1,6 @@
 import {closeMenu} from './calendar.js';
 import {getUserId} from './contacts.js';
+import {getGroupId} from './contacts.js';
 import {adjustDateByDays} from './calendar.js';
 import {manipulate} from './calendar.js';
 
@@ -318,7 +319,7 @@ function openGroupInfoMenu(group, members) {
     });
 }
 
-function closeMenu2() {
+export function closeMenu2() {
     if (activeMenu2) {
         activeMenu2.style.display = 'none';
         overlay2.style.display = 'none';
@@ -455,7 +456,7 @@ function addMemberEndpoint(group_id, contact) {
 // Delete Members
 function deleteMemberFunction(groupId, memberId) {
     // fetch(`http://127.0.0.1:5000/api/groups/${groupId}/remove-member/${memberId}/`, {
-    fetch(`http://127.0.0.1:5000/remove_member_from_group/${groupId}/${memberId}`, {
+    fetch(`http://127.0.0.1:5000/remove_member_from_group/${groupId}/${memberId}/${user.id}`, {
         method: 'DELETE', 
         headers: {
             'Content-Type': 'application/json',
@@ -463,9 +464,12 @@ function deleteMemberFunction(groupId, memberId) {
         },
     })
         .then(response => {
+            if(response.status == 403) {
+                throw new Error(`No tiene permisos para eliminar miembros`)
+            }
             if (!response.ok) {
                 return response.json().then(err => {
-                    throw new Error(`Error al eliminar miembro: ${err.detail || err}`);
+                    throw new Error(`Error al eliminar miembro del grupo ${err.detail || err}`);
                 });
             }
             // Verificar si hay contenido en la respuesta antes de procesarla
@@ -557,6 +561,166 @@ function leaveGroupFunction(groupId) {
             console.error('Error:', error);
             alert(error.message);
         });
+}
+
+export function selectUserEvent(id) {
+    // closeMenu()
+    const menu = document.getElementById('menu8');
+
+
+    // fetch('http://127.0.0.1:8000/api/contacts/', {
+    fetch(`http://127.0.0.1:5000/contacts/${id}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`, // Token para autenticación
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                // Manejar errores si la respuesta no es exitosa
+                return response.json().then(err => {
+                    throw new Error(`Error al obtener contactos: ${err.detail || err}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Mostrar los contactos en la consola o en la UI
+            console.log('Contactos obtenidos:', data);
+
+            // Aquí puedes manipular los datos para mostrarlos en la página
+            const contactList = document.getElementById('contact-list-member'); // Asegúrate de tener un contenedor en tu HTML con este ID
+            contactList.innerHTML = ''; // Limpiar cualquier contenido previo
+
+            data['contacts'].forEach(contact => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${contact.contact_name}`;
+
+                // Crear el ícono de basura
+                const addMemberIcon = document.createElement('i');
+                addMemberIcon.className = 'fas fa-plus';
+                addMemberIcon.id = 'icon'
+                addMemberIcon.style.marginBottom = '15px';
+                addMemberIcon.style.marginLeft = '15px';
+
+                addMemberIcon.addEventListener('click', function () {
+                    const returnValue = getUserId(contact['contact_name'])
+                    console.log("return Value", returnValue)
+                    return returnValue['<value>']
+                })
+
+                // Agregar el ícono al elemento de lista
+                listItem.appendChild(addMemberIcon);
+
+                // Agregar el elemento de lista al contenedor
+                contactList.appendChild(listItem);
+            });
+        })  
+        .catch(error => {
+            // Manejar errores
+            console.error('Error:', error.message);
+            alert(error.message);
+        });
+    activeMenu2 = document.getElementById('menu7');
+
+    // Muestra el overlay y el menú flotante correspondiente
+    if (menu) {
+        overlay2.style.display = 'flex';
+        menu.style.display = 'flex';
+        activeMenu2 = menu; // Guarda el menú activo
+    }
+
+    const closeMenuContacts = document.getElementById('closeMenuContacts')
+    closeMenuContacts.addEventListener('click', function () {
+        closeMenu2()
+    })
+
+    // Evento para cerrar menús
+    overlay2.addEventListener('click', closeMenu2);
+    document.querySelectorAll('.closeMenu2').forEach(button => {
+        button.addEventListener('click', closeMenu2);
+    });
+}
+
+export function selectGroupEvent(id) {
+    // closeMenu()
+    const menu = document.getElementById('menu6');
+
+    fetch(`http://127.0.0.1:5000/list_groups/${id}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`, // Token para autenticación
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                // Manejar errores si la respuesta no es exitosa
+                return response.json().then(err => {
+                    throw new Error(`Error al obtener grupos: ${err.detail || err}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Mostrar los contactos en la consola o en la UI
+            console.log('Grupos obtenidos:', data);
+
+            // Aquí puedes manipular los datos para mostrarlos en la página
+            const groupList = document.getElementById('group-list'); // Asegúrate de tener un contenedor en tu HTML con este ID
+            groupList.innerHTML = ''; // Limpiar cualquier contenido previo
+
+            data['groups'].forEach(group => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${group.name}`;
+
+                // Crear el ícono de basura
+                const addGroupIcon = document.createElement('i');
+                addGroupIcon.className = 'fas fa-plus';
+                addGroupIcon.id = 'icon'
+                addGroupIcon.style.marginBottom = '15px';
+                addGroupIcon.style.marginLeft = '15px';
+
+                addGroupIcon.addEventListener('click', function () {
+                    const returnValue = getGroupId(group['name'])
+                    console.log("return Value", returnValue)
+                    return returnValue['<value>']
+                })
+
+                // Agregar el ícono al elemento de lista
+                listItem.appendChild(addGroupIcon);
+
+                // Agregar el elemento de lista al contenedor
+                groupList.appendChild(listItem);
+            });
+        })
+        .catch(error => {
+            // Manejar errores
+            console.error('Error:', error.message);
+            alert(error.message);
+        });
+
+
+    activeMenu2 = document.getElementById('menu7');
+
+    // Muestra el overlay y el menú flotante correspondiente
+    if (menu) {
+        overlay2.style.display = 'flex';
+        menu.style.display = 'flex';
+        activeMenu2 = menu; // Guarda el menú activo
+    }
+
+    const closeMenuContacts = document.getElementById('closeMenuGroups')
+    closeMenuContacts.addEventListener('click', function (event) {
+        closeMenu2()
+    })
+
+    // Evento para cerrar menús
+    overlay2.addEventListener('click', closeMenu2);
+    document.querySelectorAll('.closeMenu2').forEach(button => {
+        button.addEventListener('click', closeMenu2);
+    });
 }
 
 function agendaGroup1(groupID) {

@@ -1,4 +1,5 @@
 import {closeMenu} from './calendar.js';
+import {closeMenu2} from './groups.js';
 
 const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 const userData = sessionStorage.getItem('userData');
@@ -7,7 +8,7 @@ const userData = sessionStorage.getItem('userData');
 const userDataObject = JSON.parse(userData);
 
 // Obtener el id de un usuario a partir de su username y su email
-export function getUserId(username, email) {
+export function getUserId(username) {
     // Crear el objeto con los datos
     const data = {
         username: username
@@ -31,12 +32,45 @@ export function getUserId(username, email) {
             return response.json();
         })
         .then(data => {
-            // Redirigir al usuario
-            // console.log("ID")
-            // console.log(data)
-            // console.log(data.id)
-            // finalID = data.id
-            return data.contact
+            const textInput = document.getElementById('EventUser')
+            textInput.value = data['contact']
+            closeMenu2();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(error.message);
+            throw error;
+        });
+}
+
+// Obtener el id de un grupo a partir de su name
+export function getGroupId(name) {
+    // Crear el objeto con los datos
+    const data = {
+        name: name
+    };
+
+    // Enviar los datos al endpoint
+    return fetch('http://127.0.0.1:5000/get_group_id/', {
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`,
+        },
+        body: JSON.stringify(data),
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(`Error al obtener el ID del grupo: ${err.detail || err}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            const textInput = document.getElementById('EventGroup')
+            textInput.value = data['group']
+            closeMenu2();
         })
         .catch(error => {
             console.error('Error:', error);
@@ -49,19 +83,13 @@ export function getUserId(username, email) {
 document.getElementById('btn_add_contact').addEventListener('click', function () {
     // Obtener los valores de los inputs
     const username = document.getElementById('exampleInputUsername').value;
-    const email = document.getElementById('exampleInputEmail').value;
-    getUserId(username, email)
+    getUserId(username)
         .then(id => {
-            console.log('ID final:', id);
             const contactData = {
                 user_id: id,
                 contact_name: username,
                 owner_id: userDataObject.id
             }
-            console.log(username)
-            console.log(email)
-            console.log(userDataObject.id)
-            console.log(id)
         
         
             // fetch('http://127.0.0.1:5000/api/contacts/', {

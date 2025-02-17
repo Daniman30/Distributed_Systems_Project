@@ -5,7 +5,7 @@ from chord_dht import server
 from storage import Database  # Asegúrate de que 'database.py' contenga el código que compartiste
 import os
 
-app = Flask(__name__, template_folder='../../../frontend/templates', static_folder='../../../backend/staticfiles')
+app = Flask(__name__, template_folder='../../frontend/templates', static_folder='../../backend/staticfiles')
 CORS(app)  # Esto permite que el frontend (posiblemente en otro dominio) pueda comunicarse
 
 # Crea una instancia global de la clase Database
@@ -75,6 +75,8 @@ def add_contact():
     user_id = data.get('user_id')
     contact_name = data.get('contact_name')
     owner_id = data.get('owner_id')
+    if user_id == owner_id:
+        return jsonify({'message': 'Error, no se permite auto contacto'}), 400
     if server.add_contact(user_id, contact_name, owner_id)=="Contact added":
         return jsonify({'message': 'Contacto agregado'}), 201
     else:
@@ -122,7 +124,7 @@ def getUsername():
 def create_event():
     data = request.get_json()
     name = data.get('title')
-    date = data.get('start_time').split("T")[0]  # Formato: 'YYYY-MM-DD'
+    date = data.get('start_time')  # Formato: 'YYYY-MM-DD'
     owner_id = data.get('owner_id')
     privacy = data.get('privacy')
     group_id = data.get('group', None)
@@ -206,12 +208,10 @@ def add_member_to_group():
     else:
         return jsonify({'message': 'Error al agregar miembro al grupo'}), 400
 
-@app.route('/remove_member_from_group/<int:group_id>/<int:member_id>', methods=['DELETE'])
-def remove_member_from_group(group_id, member_id):
-    if server.remove_member_from_group(id,group_id, member_id)=="Member removed":
-        return jsonify({'message': 'Miembro eliminado del grupo'}), 200
-    else:
-        return jsonify({'message': 'Error al eliminar miembro del grupo'}), 400
+@app.route('/remove_member_from_group/<int:group_id>/<int:member_id>/<int:admin_id>', methods=['DELETE'])
+def remove_member_from_group(group_id, member_id, admin_id):
+    message, code = server.remove_member_from_group(id,group_id, member_id, admin_id)
+    return jsonify({'message': message}), code
 
 @app.route('/list_groups/<int:user_id>/', methods=['GET'])
 def list_groups(user_id):
@@ -237,16 +237,39 @@ def leave_group(group_id, user_id):
     else:
         return jsonify({'message': 'Error al abandonar el grupo'}), 400
 
+# Endpoint para obtener id a partir de name
+@app.route('/get_group_id/', methods=['POST'])
+def getGroupID():
+    data = request.get_json()
+    group = db.getGroupID(data.get('name'))
+    if group:
+        return jsonify({"group": group}), 200
+    else:
+        return jsonify({'message': 'Credenciales incorrectas'}), 401
+    
 
 # ----------------------------
 # Ejecutar la aplicación
 # ----------------------------
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
 
 
 #! ########################################
-#? Abandonar grupo
-# Agendas
+#? Herencia en grupo
+# Mejorar crear eventos grupales (cree evento distinto por miembro)
+# Aceptar o declinar invitacion
+# Mejorar apartado de user + campana
+# Mejorar perfil (username y eliminar cosas)
+#* Menu para eventos creados 
+# Eliminar evento
+# Editar evento
+#* Agendas
+# Agenda integrante grupo
+# Agenda contacto
+# Agenda grupo
+# *
+# Arreglar errores (alerts)
 #! ########################################
+

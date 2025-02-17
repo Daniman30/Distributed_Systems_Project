@@ -57,12 +57,6 @@
                     <span>Add Event</span>
                 </a>
             </li>
-            <!-- <li class="nav-item">
-                <a class="nav-link openMenu" data-menu="menu2" href="">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>Configuration</span>
-                </a>
-            </li> -->
 
             <!-- Overlays y Menús flotantes -->
             <div class="overlay" id="overlay"></div>
@@ -76,52 +70,38 @@
                 <input type="text" class="form-control form-control-user"
                     id="EventName" placeholder="Event Name">
 
-                <input type="text" class="form-control form-control-user"
-                id="EventDescription" placeholder="Event Description">
-
                 <div class="row_elements">
                     <div class="col-sm-6 mb-3 mb-sm-0">
                         <p style="margin-bottom: 0px;">Init Day</p>
                         <input type="date" class="form-control form-control-user"
                         id="EventDateInit">
                     </div>
-                    <div class="col-sm-6">
-                        <p style="margin-bottom: 0px;">Init time</p>
-                        <input type="time" class="form-control form-control-user"
-                        id="EventTimeInit">
+                    <div class="checkboxPrivacy">
+                        <input type="checkbox" id="checkPrivacy">
+                        <label>Private</label>
                     </div>
                 </div>
 
-                <!-- <div class="row_elements">
-                    <div class="col-sm-6 mb-3 mb-sm-0">
-                        <p style="margin-bottom: 0px;">End Day</p>
-                        <input type="date" class="form-control form-control-user"
-                        id="EventDateEnd">
-                    </div>
-                    <div class="col-sm-6">
-                        <p style="margin-bottom: 0px;">End time</p>
-                        <input type="time" class="form-control form-control-user"
-                        id="EventTimeEnd">
-                    </div>
-                </div> -->
-
                 <div class="row_elements">
-                    <!-- <button type="button" class="btn btn-primary btn-user btn-block" id="btn_select_group">Group</button>
-                    <button type="button" class="btn btn-primary btn-user btn-block" id="btn_select_participants">Participants</button> -->
                     <div class="col-sm-6 mb-3 mb-sm-0">
                         <p style="margin-bottom: 0px;">Group ID</p>
                         <input type="text" class="form-control form-control-user"
                         id="EventGroup">
                     </div>
-                    <div class="checkboxPrivacy">
-                        <input type="checkbox" id="checkPrivacy">
-                        <label>Private</label>
+                    <div class="col-sm-6 mb-3 mb-sm-0">
+                        <button type="button" class="btn btn-primary btn-user btn-block btn-select" id="btn_select_group">Select Group</button>
                     </div>
-                    <!-- <div class="col-sm-6">
-                        <p style="margin-bottom: 0px;">Participants IDs</p>
+                </div>
+                <!-- NO BORRAR -->
+                <div class="row_elements">
+                    <div class="col-sm-6 mb-3 mb-sm-0">
+                        <p style="margin-bottom: 0px;">User ID</p>
                         <input type="text" class="form-control form-control-user"
-                        id="EventParticipants">
-                    </div> -->
+                        id="EventUser">
+                    </div>
+                    <div class="col-sm-6 mb-3 mb-sm-0">
+                        <button type="button" class="btn btn-primary btn-user btn-block btn-select" id="btn_select_contact">Select Contact</button>
+                    </div>
                 </div>
 
                 <button type="button" class="btn btn-primary btn-user btn-block" id="btn_create_event">Create Event</button>
@@ -139,8 +119,6 @@
                 <h1>Add Contact</h1>
                 <input type="text" class="form-control form-control-user"
                     id="exampleInputUsername" placeholder="Contact Username">
-                <input type="text" class="form-control form-control-user"
-                    id="exampleInputEmail" placeholder="Contact Email">
                 <button type="button" class="btn btn-primary btn-user btn-block" id="btn_add_contact">Add Contact</button>
                 <button class="closeMenu">Close</button>
             </div>
@@ -157,8 +135,6 @@
                 <h1>Create Group</h1>
                 <input type="text" class="form-control form-control-user"
                     id="GroupName" placeholder="Group Name">
-                <!-- <input type="text" class="form-control form-control-user"
-                    id="GroupDescription" placeholder="Group Description"> -->
                 <div class="custom-control custom-checkbox small">
                     <input type="checkbox" class="custom-control-input" id="is_hierarchical">
                     <label class="custom-control-label" for="is_hierarchical">Hierarchical</label>
@@ -171,7 +147,7 @@
             <div class="floating-menu" id="menu6">
                 <h1>Groups</h1>
                 <ul class="get-list" id="group-list"></ul>
-                <button class="closeMenu">Close</button>
+                <button class="closeMenu" id="closeMenuGroups">Close</button>
             </div>
 
             <!-- Info Group -->
@@ -183,7 +159,7 @@
             <div class="floating-menu" id="menu8">
                 <h1>Contacts</h1>
                 <ul class="get-list" id="contact-list-member"></ul>
-                <button class="closeMenu3">Close</button>
+                <button class="closeMenu3" id="closeMenuContacts">Close</button>
             </div>
 
             <!-- Event Details -->

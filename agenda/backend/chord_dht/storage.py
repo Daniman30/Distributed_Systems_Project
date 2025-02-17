@@ -126,9 +126,10 @@ class Database:
         """
         Agrega un contacto a un usuario.
         """
-        print("Datos de contacto: ", user_id, contact_name, owner_id)
+        if contact_name in [c['contact_name'] for c in self.list_contacts(owner_id)]:
+            self.session.rollback()
+            return False  # El contacto ya existe
         contact = Contact(user_id=user_id, contact_name=contact_name, owner_id=owner_id)
-        print("Contacto: ", contact.owner_id, contact.id, contact.contact_name)
         self.session.add(contact)
         try:
             self.session.commit()
@@ -251,9 +252,9 @@ class Database:
         Lista los eventos de un usuario (personales y grupales).
         """
         events = self.session.query(Event).filter(
-            (Event.owner_id == user_id) | (Event.group_id.in_(
+            (Event.owner_id == user_id) | ((Event.group_id.in_(
                 self.session.query(GroupMember.group_id).filter_by(user_id=user_id)
-            ))
+            )) & Event.status == 'confirmed')
         ).all()
         return events
     
@@ -261,10 +262,10 @@ class Database:
         """
         Lista los eventos de un usuario (personales y grupales).
         """
-        events = self.session.query(Event).filter(
-            ((Event.owner_id == user_id) | (Event.group_id.in_(
+        print(user_id)
+        events = self.session.query(Event).filter((Event.group_id.in_(
                 self.session.query(GroupMember.group_id).filter_by(user_id=user_id)
-            ))) & (Event.status == 'pending')
+            )) & (Event.status == 'pending')
         ).all()
         return events
 
@@ -277,6 +278,7 @@ class Database:
         self.session.add(group)
         try:
             self.session.commit()
+            self.add_member_to_group(group.id, owner_id, 'admin')
             return True
         except:
             self.session.rollback()
@@ -286,6 +288,10 @@ class Database:
         """
         Agrega un miembro a un grupo.
         """
+        if user_id in self.list_members(group_id):
+            self.session.rollback()
+            return False  # El usuario ya está en el grupo
+        
         member = GroupMember(group_id=group_id, user_id=user_id, role=role)
         self.session.add(member)
         try:
@@ -295,23 +301,30 @@ class Database:
             self.session.rollback()
             return False  # El usuario ya está en el grupo
         
-    def remove_member_from_group(self, group_id: int, user_id: int) -> bool:
+    def remove_member_from_group(self, group_id: int, user_id: int, admin_id: int) -> bool:
         """
         Elimina un miembro de un grupo.
         """
         member = self.session.query(GroupMember).filter_by(group_id=group_id, user_id=user_id).first()
+        role = self.session.query(GroupMember).filter_by(group_id=group_id, user_id=admin_id).first().role
         if member:
-            self.session.delete(member)
-            self.session.commit()
-            return True
-        return False  # El miembro no existe en el grupo
+            if role == 'admin' and admin_id != user_id:
+                self.session.delete(member)
+                self.session.commit()
+                return 'Miembro eliminado del grupo', 200
+            return 'No tiene permisos para eliminar miembros', 403
+        return 'Error al eliminar miembro del grupo', 400  # El miembro no existe en el grupo
 
     def list_groups(self, user_id: int) -> list:
         """
         Lista los grupos de un usuario.
         """
-        groups = self.session.query(Group).filter(Group.owner_id == user_id).all()
-        return [(group.id, group.name) for group in groups]
+        groups = self.session.query(GroupMember).filter(GroupMember.user_id == user_id).all()
+
+        group_ids = [group.group_id for group in groups]
+        group_names = [self.session.query(Group).filter(Group.id == group_id).first().name for group_id in group_ids]
+        final = list(zip(group_ids, group_names))
+        return final
     
     def list_members(self, group_id: int) -> list:
         """
@@ -326,6 +339,13 @@ class Database:
         """
         group = self.session.query(Group).filter_by(id=group_id).first()
         if group:
+            members = self.list_members(group.id)
+            if len(members) < 1:
+                self.session.delete(group)
+                self.session.commit()
+                return True
+            for member in members: self.remove_member_from_group(group.id, member, group.owner_id)
+            self.leave_group(group.id, group.owner_id)
             self.session.delete(group)
             self.session.commit()
             return True
@@ -335,13 +355,30 @@ class Database:
         """
         Abandona un grupo
         """
-        group = self.session.query(GroupMember).filter_by(group_id=group_id, user_id=user_id).first()
-        if group:
-            self.session.delete(group)
-            self.session.commit()
-            return True
-        return False  # El grupo no existe
-    #! En GroupMember group_id deberia ser admin_id y crear otra columna que sea group_id
+        groupMember = self.session.query(GroupMember).filter_by(group_id=group_id, user_id=user_id).first()
+        if not groupMember:
+            return False  # El grupo no existe
+        members = self.session.query(GroupMember).filter(GroupMember.group_id == group_id).all()
+        if len(members) <= 1:
+            if groupMember.role == 'admin':
+                groupMember.role = 'member'
+                return self.leave_group(group_id, user_id)
+            else: # no soy admin
+                self.session.delete(groupMember)
+                self.session.commit()
+                return self.delete_group(group_id)
+        else: # varios miembros
+            if groupMember.role == 'admin':
+                for member in members:
+                    if member.role == 'member':
+                        member.role = 'admin'
+                        self.session.delete(groupMember)
+                        self.session.commit()
+                        return True
+            else: # no soy admin
+                self.session.delete(groupMember)
+                self.session.commit()
+                return True
 
     # Métodos auxiliares
     def _has_event_conflict(self, user_id: int, event_date: datetime) -> bool:
@@ -425,3 +462,10 @@ class Database:
         if user:
             return user.name
         return None
+    
+    def getGroupID(self, name):
+        group = self.session.query(Group).filter_by(name=name).first()
+        if group:
+            return group.id
+        return None
+    
