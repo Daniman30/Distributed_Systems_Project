@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 from utils import set_id
 from chord_dht import server
-from storage import Database  # Asegúrate de que 'database.py' contenga el código que compartiste
+from storage import Database
 import os
 
 app = Flask(__name__, template_folder='../../frontend/templates', static_folder='../../backend/staticfiles')

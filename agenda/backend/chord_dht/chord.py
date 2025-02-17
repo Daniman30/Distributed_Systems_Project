@@ -4,11 +4,11 @@ import threading
 import random
 import time
 import queue
-from backend.chord_dht.utils import get_ip, set_id
-from backend.chord_dht.communication import ADD_CONTACT, ADD_MEMBER, CANCEL_EVENT, CONFIRM_EVENT, CREATE_EVENT, CREATE_GROUP, CREATE_GROUP_EVENT, CREATE_INDIVIDUAL_EVENT, DELETE_GROUP, LEAVE_GROUP, LIST_CONTACTS, LIST_EVENTS, LIST_EVENTS_PENDING, LIST_GROUP_AGENDA, LIST_GROUPS, LIST_MEMBER, LIST_PERSONAL_AGENDA, LOGIN, REMOVE_CONTACT, REMOVE_MEMBER, NodeReference, BroadcastRef, send_data
-from backend.chord_dht.communication import JOIN, CONFIRM_JOIN, FIX_FINGER, FIND_FIRST, REQUEST_DATA, CHECK_PREDECESSOR, NOTIFY, UPDATE_PREDECESSOR, UPDATE_FINGER, UPDATE_SUCC, DATA_PRED, FALL_SUCC, REGISTER
-from backend.chord_dht.handle_data import HandleData
-from backend.chord_dht.storage import Database
+from utils import get_ip, set_id
+from communication import ADD_CONTACT, ADD_MEMBER, CANCEL_EVENT, CONFIRM_EVENT, CREATE_EVENT, CREATE_GROUP, CREATE_GROUP_EVENT, CREATE_INDIVIDUAL_EVENT, DELETE_GROUP, LEAVE_GROUP, LIST_CONTACTS, LIST_EVENTS, LIST_EVENTS_PENDING, LIST_GROUP_AGENDA, LIST_GROUPS, LIST_MEMBER, LIST_PERSONAL_AGENDA, LOGIN, REMOVE_CONTACT, REMOVE_MEMBER, NodeReference, BroadcastRef, send_data
+from communication import JOIN, CONFIRM_JOIN, FIX_FINGER, FIND_FIRST, REQUEST_DATA, CHECK_PREDECESSOR, NOTIFY, UPDATE_PREDECESSOR, UPDATE_FINGER, UPDATE_SUCC, DATA_PRED, FALL_SUCC, REGISTER
+from handle_data import HandleData
+from storage import Database
 TCP_PORT = 8000  # puerto de escucha del socket TCP
 UDP_PORT = 8888  # puerto de escucha del socket UDP
 
@@ -54,7 +54,7 @@ class ChordNode:
                 break
 
         self.broadcast.fix_finger()
-        if self.pred != None:
+        if self.predecessor != None:
             pass
 
 # region Chord

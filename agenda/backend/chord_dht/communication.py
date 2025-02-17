@@ -1,5 +1,5 @@
 import socket
-from backend.chord_dht.utils import set_id
+from utils import set_id
 
 # Definición de operaciones Chord
 JOIN = 'join'

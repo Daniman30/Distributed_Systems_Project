@@ -1,7 +1,6 @@
 from threading import Event
-from backend.chord_dht.storage import Contact, Group, User
-from backend.chord_dht.storage import Database  # Asegúrate de que DB apunte a la base de datos SQLite
-from backend.chord_dht.utils import set_id
+from storage import Contact, Group, User
+from utils import set_id
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
