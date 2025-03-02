@@ -1,13 +1,12 @@
-table = {}
-id = 240
-for i in range(8):
-    table[(id + 2**i) % 256] = id
-
-print(table)
-
-for row in table.items():
-    id, owner = row
-    print(id)
-    print(owner)
+import hashlib
     
 
+def set_id(data: str) -> int:
+    """
+    Hashea una cadena usando SHA-1 y devuelve un entero.
+    """
+    return int(hashlib.sha1(data.encode()).hexdigest(), 16) % (2 ** 8)
+
+print(set_id("172.18.0.4"))
+print(set_id("172.18.0.3"))
+print(set_id("172.18.0.4"))

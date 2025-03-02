@@ -3,7 +3,6 @@ import socket
 import threading
 import random
 import time
-import queue
 TCP_PORT = 8000  # puerto de escucha del socket TCP
 UDP_PORT = 8888  # puerto de escucha del socket UDP
 # Definición de operaciones Chord
@@ -47,14 +46,19 @@ class ChordNode:
     def __init__(self):
         self.ip = self.get_ip()
         self.id = self.generate_id()
-        self.port = TCP_PORT
-        self.predecessor = NodeReference(self.ip, self.port)
-        self.succesor = NodeReference(self.ip, self.port)
+        self.tcp_port = TCP_PORT
+        self.udp_port = UDP_PORT
+        self.predecessor = NodeReference(self.ip, self.tcp_port)
+        self.succesor = NodeReference(self.ip, self.tcp_port)
         self.ip_table = {} # IPs table: {ID: {IP, port}}
         self.finger_table = self.create_finger_table() # Finger table: {ID: Owner}
+        self.leader = True
+        self.first = True
+        
         # self.db = Database()
 
         threading.Thread(target=self.start_tcp_server).start()
+        threading.Thread(target=self.start_broadcast).start()
         threading.Thread(target=self.handle_finger_table).start()
 
         self.join()
@@ -63,8 +67,8 @@ class ChordNode:
         """Iniciar el servidor TCP."""
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            s.bind((self.ip, self.port))
-            print(f'Socket TCP binded to ({self.ip}, {self.port})')
+            s.bind((self.ip, self.tcp_port))
+            print(f'Socket TCP binded to ({self.ip}, {self.tcp_port})')
             s.listen()
 
             # Se queda escuchando cualquier mensaje entrante
@@ -75,13 +79,83 @@ class ChordNode:
                 client.start()
 
     def _handle_client_tcp(self, conn: socket.socket, addr: tuple):
-        # Maneja el mensaje entrante
         data = conn.recv(1024).decode().split('|') # operation | id | port
         option = data[0]
         if option == '':
             return
         id = data[1]
         port = data[2]
+
+
+        print("conn, addr, data", conn, addr, data)
+        print("option, info, ip, port", option, id, port)
+
+    def send_data_tcp(self, op, data):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:  # 🔹 Cambiar a TCP (SOCK_STREAM)
+                s.connect((self.ip, self.tcp_port))  # 🔹 Conectar al servidor TCP
+                s.sendall(f'{op}|{data}'.encode('utf-8'))  # 🔹 Enviar mensaje correctamente
+                print(f"Mensaje enviado correctamente vía TCP. Operation: {op} Data: {data}")
+        except Exception as e:
+            print(f"Mensaje fallido. Operation: {op} Data: {data} Error: {e}")
+
+    def send_data_broadcast(self, op, data):
+        """
+        Envía un mensaje por broadcast utilizando UDP.
+        
+        :param op: Operación a enviar (str).
+        :param data: Datos a enviar (str).
+        """
+        try:
+            # Crear un socket UDP
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                # Habilitar el envío de broadcast
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                
+                # Construir el mensaje
+                mensaje = f"{op}|{data}".encode('utf-8')
+                
+                # Enviar el mensaje por broadcast
+                s.sendto(mensaje, (BROADCAST_IP, self.udp_port))
+                print(f"Mensaje enviado por broadcast. Operation: {op} Data: {data}")
+        except Exception as e:
+            print(f"Error al enviar mensaje por broadcast. Operation: {op} Data: {data} Error: {e}")
+
+    def start_broadcast(self):
+        """
+        Escucha mensajes de broadcast en el puerto especificado.
+        
+        :param puerto: Puerto donde escuchar el broadcast.
+        """
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                # Permitir reutilizar el puerto
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                
+                # Vincular el socket al puerto
+                s.bind(("", self.udp_port))  # "" significa que escucha en todas las interfaces
+                
+                print(f"[+] Escuchando broadcast en el puerto {self.udp_port}...")
+                
+                while True:
+                    time.sleep(1)
+                    # Recibir datos
+                    datos, direccion = s.recvfrom(1024)
+                    mensaje = datos.decode('utf-8')
+                    thread = threading.Thread(target=self.handle_broadcast, args=(mensaje, direccion))  # !falta el handle
+                    thread.start()
+        except Exception as e:
+            print(f"[!] Error al recibir broadcast: {e}")
+
+    def handle_broadcast(self, mensaje, direccion):
+        # Maneja el mensaje entrante
+        data = mensaje.split('|') # operation | id | port
+        option = data[0]
+        if option == '':
+            return
+        id = int(data[1])
+        port = int(data[2])
+        print("ANALIZANDO MENSAJE: ", option)
 
         if option == JOIN:
             # No hacer nada si recibo la operacion de mi mismo
@@ -91,61 +165,113 @@ class ChordNode:
             elif self.id == self.succesor.id:
                 # Actualiza mi self.succesor a id
                 op = UPDATE_SUCC
-                data = f'{self.succesor.id}|{self.succesor.port}|{id}|{port}'
-                self.send_data(op, data)
+                data = f'{self.id}|{self.tcp_port}|{id}|{port}'
+                self.send_data_broadcast(op, data)
                 
                 # Actualiza mi self.predecessor a id
                 op = UPDATE_PREDECESSOR
-                data = f'{self.predecessor.id}|{self.predecessor.port}|{id}|{port}'
-                self.send_data(op, data)
+                data = f'{self.id}|{self.tcp_port}|{id}|{port}'
+                self.send_data_broadcast(op, data)
 
                 # Actualiza id.sucesor a self.id
                 op = UPDATE_SUCC
-                data = f'{id}|{port}|{self.id}|{self.port}'
-                self.send_data(op, data)
+                data = f'{id}|{port}|{self.id}|{self.tcp_port}'
+                self.send_data_broadcast(op, data)
                 # Actualiza id.predecesor a self.id
                 op = UPDATE_PREDECESSOR
-                data = f'{id}|{port}|{self.id}|{self.port}'
-                self.send_data(op, data)
-            # Hay 2 nodos o mas
+                data = f'{id}|{port}|{self.id}|{self.tcp_port}'
+                self.send_data_broadcast(op, data)
+                print("self.ip, self.predecessor.ip, self.succesor.ip: ", self.ip, self.predecessor.ip, self.succesor.ip)
+        # Hay 2 nodos o mas
             # Esta entre yo y mi predecesor
             elif self.id < id and self.predecessor.id > id:
                 # Actualiza mi self.succesor a id
                 op = UPDATE_SUCC
-                data = f'{self.succesor.id}|{self.succesor.port}|{id}|{port}'
-                self.send_data(op, data)
+                data = f'{self.id}|{self.tcp_port}|{id}|{port}'
+                self.send_data_broadcast(op, data)
                 
                 # Actualiza mi self.predecessor a id
                 op = UPDATE_PREDECESSOR
-                data = f'{self.predecessor.id}|{self.predecessor.port}|{id}|{port}'
-                self.send_data(op, data)
+                data = f'{self.id}|{self.tcp_port}|{id}|{port}'
+                self.send_data_broadcast(op, data)
 
                 # Actualiza id.sucesor a self.id
                 op = UPDATE_SUCC
-                data = f'{id}|{port}|{self.id}|{self.port}'
-                self.send_data(op, data)
+                data = f'{id}|{port}|{self.id}|{self.tcp_port}'
+                self.send_data_broadcast(op, data)
+
                 # Actualiza id.predecesor a self.id
                 op = UPDATE_PREDECESSOR
-                data = f'{id}|{port}|{self.id}|{self.port}'
-                self.send_data(op, data)
+                data = f'{id}|{port}|{self.id}|{self.tcp_port}'
+                self.send_data_broadcast(op, data)
+                print("self.ip, self.predecessor.ip, self.succesor.ip: ", self.ip, self.predecessor.ip, self.succesor.ip)
+            
+            # Es menor que yo y soy el first
+            elif self.id < id and self.predecessor.id > self.id:
+                # Actualiza mi self.succesor a id
+                op = UPDATE_SUCC
+                data = f'{id}|{port}|{self.predecessor.id}|{self.predecessor.port}'
+                self.send_data_broadcast(op, data)
+                
+                # Actualiza mi self.predecessor a id
+                op = UPDATE_PREDECESSOR
+                data = f'{id}|{port}|{self.id}|{self.tcp_port}'
+                self.send_data_broadcast(op, data)
 
+                # Actualiza id.sucesor a self.id
+                op = UPDATE_SUCC
+                data = f'{self.id}|{self.tcp_port}|{id}|{port}'
+                self.send_data_broadcast(op, data)
 
-        print("conn, addr, data", conn, addr, data)
-        print("option, info, ip, port", option, id, port)
+                # Actualiza id.predecesor a self.id
+                op = UPDATE_PREDECESSOR
+                data = f'{self.predecessor.id}|{self.predecessor.port}|{id}|{port}'
+                self.send_data_broadcast(op, data)
+                print("self.ip, self.predecessor.ip, self.succesor.ip: ", self.ip, self.predecessor.ip, self.succesor.ip)
+            
+            # Es mayor que yo y soy el leader
+            elif self.id > id and self.succesor.id < self.id:
+                # Actualiza mi self.succesor a id
+                op = UPDATE_SUCC
+                data = f'{id}|{port}|{self.id}|{self.tcp_port}'
+                self.send_data_broadcast(op, data)
+                
+                # Actualiza mi self.predecessor a id
+                op = UPDATE_PREDECESSOR
+                data = f'{id}|{port}|{self.succesor.id}|{self.succesor.port}'
+                self.send_data_broadcast(op, data)
 
-    def send_data(self, op, data):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:  # 🔹 Cambiar a TCP (SOCK_STREAM)
-                s.connect((self.ip, self.port))  # 🔹 Conectar al servidor TCP
-                s.sendall(f'{op}|{data}'.encode('utf-8'))  # 🔹 Enviar mensaje correctamente
-                print(f"Mensaje enviado correctamente vía TCP. Operation: {op} Data: {data}")
-        except Exception as e:
-            print(f"Mensaje fallido. Operation: {op} Data: {data} Error: {e}")
+                # Actualiza id.sucesor a self.id
+                op = UPDATE_SUCC
+                data = f'{self.succesor.id}|{self.succesor.port}|{self.id}|{self.tcp_port}'
+                self.send_data_broadcast(op, data)
+
+                # Actualiza id.predecesor a self.id
+                op = UPDATE_PREDECESSOR
+                data = f'{self.id}|{self.tcp_port}|{id}|{port}'
+                self.send_data_broadcast(op, data)
+                print("self.ip, self.predecessor.ip, self.succesor.ip: ", self.ip, self.predecessor.ip, self.succesor.ip)
+        
+        elif option == UPDATE_SUCC:
+            new_id = int(data[3])
+            new_port = int(data[4])
+            print("CHECK SUCCESOR: ", self.id, id, self.id == id, new_id, new_port)
+            if self.id == id:
+                print("UPDATE_SUCC")
+                self.succesor = NodeReference(new_id, new_port, True)
+
+        elif option == UPDATE_PREDECESSOR:
+            new_id = int(data[3])
+            new_port = int(data[4])
+            print("CHECK PREDECESSOR: ", self.id, id, self.id == id, new_id, new_port)
+            if self.id == id:
+                print("UPDATE_PREDECESSOR")
+                self.predecessor = NodeReference(new_id, new_port, True)
 
     def join(self):
         op = JOIN
-        data = f'{self.id}|{self.port}'
-        self.send_data(op, data)
+        data = f'{self.id}|{self.tcp_port}'
+        self.send_data_broadcast(op, data)
 
     def create_finger_table(self):
         table = {}
@@ -159,6 +285,7 @@ class ChordNode:
         while True:
             time.sleep(1)
             for id, owner in self.finger_table.items():
+                time.sleep(1)
                 ip = self.id_to_ip(owner)
                 if not self.verificar_ip_activa(ip, TCP_PORT):
                     self.fix_finger_table()
@@ -204,6 +331,7 @@ class ChordNode:
             resultado = sock.connect_ex((ip, puerto))
             if resultado == 0:
                 print(f"[+] La IP {ip} está activa en el puerto {puerto}.")
+                print(f"{self.id}|{self.predecessor.id}|{self.succesor.id}")
                 return True
             else:
                 print(f"[-] La IP {ip} no responde en el puerto {puerto}. Código de error: {resultado}")
@@ -241,9 +369,9 @@ class ChordNode:
 
 
 class NodeReference:
-    def __init__(self, ip: str, port: int):
-        self.id = self.set_id(ip)
-        self.ip = ip
+    def __init__(self, ip: int, port: int, set: bool=False):
+        self.id = ip if set else self.set_id(str(ip))
+        self.ip = None if set else ip
         self.port = port
     
     # Hashear la data
@@ -251,7 +379,10 @@ class NodeReference:
         """
         Hashea una cadena usando SHA-1 y devuelve un entero.
         """
-        return int(hashlib.sha1(data.encode()).hexdigest(), 16) % (2 ** 8)
+        print("HASHING...")
+        ret = int(hashlib.sha1(data.encode()).hexdigest(), 16) % (2 ** 8)
+        print("data: ", data, "return: ", ret)
+        return ret
 
 if __name__ == "__main__":
 

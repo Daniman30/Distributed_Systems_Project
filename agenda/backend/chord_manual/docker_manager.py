@@ -78,6 +78,7 @@ def create_node():
         "--ip", node_ip,
         "-e", f"NODE_IP={node_ip}",
         "-e", f"NODE_PORT_TCP={node_port_tcp}",
+        "-e", f"NODE_PORT_UDP={node_port_udp}",
         "chord"
     ]
 
