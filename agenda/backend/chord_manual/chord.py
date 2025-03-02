@@ -52,8 +52,8 @@ class ChordNode:
         self.succesor = NodeReference(self.ip, self.tcp_port)
         self.ip_table = {} # IPs table: {ID: {IP, port}}
         self.finger_table = self.create_finger_table() # Finger table: {ID: Owner}
-        self.leader = True
-        self.first = True
+        self.leader = False
+        self.first = False
         
         # self.db = Database()
 
@@ -181,16 +181,25 @@ class ChordNode:
                 op = UPDATE_PREDECESSOR
                 data = f'{id}|{port}|{self.id}|{self.tcp_port}'
                 self.send_data_broadcast(op, data)
+
+                # Actualizo first y leader
+                if self.id > id:
+                    self.set_leader(self.id)
+                    self.set_first(id)
+                else:
+                    self.set_first(self.id)
+                    self.set_leader(id)
+
                 print("self.ip, self.predecessor.ip, self.succesor.ip: ", self.ip, self.predecessor.ip, self.succesor.ip)
         # Hay 2 nodos o mas
             # Esta entre yo y mi predecesor
-            elif self.id < id and self.predecessor.id > id:
-                # Actualiza mi self.succesor a id
+            elif self.id > id and self.predecessor.id < id:
+                # Actualiza mi sucesor por el nodo entrante
                 op = UPDATE_SUCC
-                data = f'{self.id}|{self.tcp_port}|{id}|{port}'
+                data = f'{self.predecessor.id}|{self.predecessor.port}|{id}|{port}'
                 self.send_data_broadcast(op, data)
                 
-                # Actualiza mi self.predecessor a id
+                # Actualiza mi predecesor por el nodo entrante
                 op = UPDATE_PREDECESSOR
                 data = f'{self.id}|{self.tcp_port}|{id}|{port}'
                 self.send_data_broadcast(op, data)
@@ -202,54 +211,64 @@ class ChordNode:
 
                 # Actualiza id.predecesor a self.id
                 op = UPDATE_PREDECESSOR
-                data = f'{id}|{port}|{self.id}|{self.tcp_port}'
+                data = f'{id}|{port}|{self.predecessor.id}|{self.predecessor.port}'
                 self.send_data_broadcast(op, data)
                 print("self.ip, self.predecessor.ip, self.succesor.ip: ", self.ip, self.predecessor.ip, self.succesor.ip)
             
             # Es menor que yo y soy el first
-            elif self.id < id and self.predecessor.id > self.id:
-                # Actualiza mi self.succesor a id
-                op = UPDATE_SUCC
+            elif self.id > id and self.predecessor.id > self.id: 
+                #! Cambiar segunda condicion por self.first cuando este listo
+                # Actualiza el predecesor del nodo entrante por self.predecesor
+                op = UPDATE_PREDECESSOR
                 data = f'{id}|{port}|{self.predecessor.id}|{self.predecessor.port}'
                 self.send_data_broadcast(op, data)
                 
-                # Actualiza mi self.predecessor a id
-                op = UPDATE_PREDECESSOR
+                # Actualiza el sucesor del nodo entrante por self.id
+                op = UPDATE_SUCC
                 data = f'{id}|{port}|{self.id}|{self.tcp_port}'
                 self.send_data_broadcast(op, data)
 
-                # Actualiza id.sucesor a self.id
-                op = UPDATE_SUCC
+                # Actualiza mi predecesor por el nodo entrante
+                op = UPDATE_PREDECESSOR
                 data = f'{self.id}|{self.tcp_port}|{id}|{port}'
                 self.send_data_broadcast(op, data)
 
-                # Actualiza id.predecesor a self.id
-                op = UPDATE_PREDECESSOR
+                # Actualiza el sucesor de mi predecesor por el nodo entrante
+                op = UPDATE_SUCC
                 data = f'{self.predecessor.id}|{self.predecessor.port}|{id}|{port}'
                 self.send_data_broadcast(op, data)
+
+                # Actualizo first
+                self.set_first(id)
+
                 print("self.ip, self.predecessor.ip, self.succesor.ip: ", self.ip, self.predecessor.ip, self.succesor.ip)
             
             # Es mayor que yo y soy el leader
-            elif self.id > id and self.succesor.id < self.id:
-                # Actualiza mi self.succesor a id
+            elif self.id < id and self.succesor.id < self.id:
+                #! Cambiar segunda condicion por self.leader cuando este listo
+                # Actualiza el sucesor del nodo entrante por mi sucesor
                 op = UPDATE_SUCC
-                data = f'{id}|{port}|{self.id}|{self.tcp_port}'
-                self.send_data_broadcast(op, data)
-                
-                # Actualiza mi self.predecessor a id
-                op = UPDATE_PREDECESSOR
                 data = f'{id}|{port}|{self.succesor.id}|{self.succesor.port}'
                 self.send_data_broadcast(op, data)
-
-                # Actualiza id.sucesor a self.id
-                op = UPDATE_SUCC
-                data = f'{self.succesor.id}|{self.succesor.port}|{self.id}|{self.tcp_port}'
+                
+                # Actualiza el predecesor del nodo entrante por mi
+                op = UPDATE_PREDECESSOR
+                data = f'{id}|{port}|{self.id}|{self.tcp_port}'
                 self.send_data_broadcast(op, data)
 
-                # Actualiza id.predecesor a self.id
-                op = UPDATE_PREDECESSOR
+                # Actualiza mi sucesor por el nodo entrante
+                op = UPDATE_SUCC
                 data = f'{self.id}|{self.tcp_port}|{id}|{port}'
                 self.send_data_broadcast(op, data)
+
+                # Actualiza el predecesor de mi sucesor por el nodo entrante
+                op = UPDATE_PREDECESSOR
+                data = f'{self.succesor.id}|{self.succesor.port}|{id}|{port}'
+                self.send_data_broadcast(op, data)
+
+                # Actualizo leader
+                self.set_leader(id)
+                
                 print("self.ip, self.predecessor.ip, self.succesor.ip: ", self.ip, self.predecessor.ip, self.succesor.ip)
         
         elif option == UPDATE_SUCC:
@@ -342,6 +361,12 @@ class ChordNode:
         finally:
             # Cerrar el socket
             sock.close()
+    
+    def set_first(self, id):
+        pass
+
+    def set_leader(self, id):
+        pass
 
     def get_ip(self) -> str:
         """
