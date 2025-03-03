@@ -4,4 +4,4 @@ FROM python:3.10
 WORKDIR /app
 
 COPY ./chord.py /app/chord_dht/
-CMD ["sh", "-c", "python chord_dht/chord.py"]
+CMD ["python", "-u", "chord_dht/chord.py"]
