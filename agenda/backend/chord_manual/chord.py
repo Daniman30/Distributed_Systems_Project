@@ -1,4 +1,6 @@
+from asyncio import Queue
 import hashlib
+import queue
 import socket
 import threading
 import random
@@ -42,6 +44,25 @@ REMOVE_CONTACT = 'remove_contact'
 LIST_MEMBER = 'list_member'
 BROADCAST_IP = '255.255.255.255'
 
+
+
+
+class NodeReference:
+    def __init__(self, ip: int, port: int, set: bool=False):
+        self.id = ip if set else self.set_id(str(ip))
+        self.ip = None if set else ip
+        self.port = port
+    
+    # Hashear la data
+    def set_id(self, data: str) -> int:
+        """
+        Hashea una cadena usando SHA-1 y devuelve un entero.
+        """
+        print("HASHING...")
+        ret = int(hashlib.sha1(data.encode()).hexdigest(), 16) % (2 ** 8)
+        print("data: ", data, "return: ", ret)
+        return ret
+
 class ChordNode:
     def __init__(self):
         self.ip = self.get_ip()
@@ -54,6 +75,7 @@ class ChordNode:
         self.finger_table = self.create_finger_table() # Finger table: {ID: Owner}
         self.leader = False
         self.first = False
+        self.finger_update_queue = queue.Queue()  # Cola de actualizaciones de finger table
         
         # self.db = Database()
 
@@ -85,6 +107,11 @@ class ChordNode:
             return
         id = data[1]
         port = data[2]
+        print("ANALIZANDO MENSAJE EN TCP: ", option)
+        print( id)
+        
+        if option == FIX_FINGER:
+            self.finger_update_queue.put((id, TCP_PORT))
 
 
         print("conn, addr, data", conn, addr, data)
@@ -153,9 +180,11 @@ class ChordNode:
         option = data[0]
         if option == '':
             return
-        id = int(data[1])
-        port = int(data[2])
+        if data[1] != None:
+            id = int(data[1])
+            port = int(data[2])
         print("ANALIZANDO MENSAJE: ", option)
+        address = direccion[1]
 
         if option == JOIN:
             # No hacer nada si recibo la operacion de mi mismo
@@ -286,52 +315,72 @@ class ChordNode:
             if self.id == id:
                 print("UPDATE_PREDECESSOR")
                 self.predecessor = NodeReference(new_id, new_port, True)
+                
+        elif option == FIX_FINGER:
+            print("entro")
+            if address != self.ip:
+                #el nodo que entra es mayor que yo, lo pongo en mi lista para actualizar mi finger teble.
+                if self.id < self.generate_id_(address):
+                    print("soy menor")
+                    self.finger_update_queue.put((address, TCP_PORT))
+                #el nodo que entra es mayor que yo, mando una solicitud para que me ponga en su finger table
+                else:
+                    print("soy mayor")
+                    self.send_data_tcp(FIX_FINGER, address)
+            
+            
 
     def join(self):
         op = JOIN
         data = f'{self.id}|{self.tcp_port}'
         self.send_data_broadcast(op, data)
+        time.sleep(2)
+        self.send_data_broadcast(FIX_FINGER, f'0|0')
 
     def create_finger_table(self):
         table = {}
         id = self.id
         for i in range(8):
             self.ip_table[id] = self.ip
-            table[(id + 2**i) % 256] = id
+            table[(id + 2**i) % 256] = NodeReference(self.ip,self.tcp_port)
         return table
 
-    def handle_finger_table(self):
+    def handle_finger_table(self):   
+        """
+        Hilo que maneja las actualizaciones de la tabla de fingers.
+        """
         while True:
-            time.sleep(1)
-            for id, owner in self.finger_table.items():
-                time.sleep(1)
-                ip = self.id_to_ip(owner)
-                if not self.verificar_ip_activa(ip, TCP_PORT):
-                    self.fix_finger_table()
-                    break
+    
+            try:
+                ip,port = self.finger_update_queue.get()
+                #print(node)
+                
+                self.fix_finger_table(NodeReference(ip, port))
+                print("FInger table arreglada")
+            finally:
+                self.finger_update_queue.task_done()
+            
 
-    def fix_finger_table(self):
+    def fix_finger_table(self,node:NodeReference):
         """
         Corrige la tabla de fingers si un nodo deja de responder o cambia la red.
         """
         print("[!] Verificando y corrigiendo tabla de fingers...")
         for i in range(8):
             finger_id = (self.id + 2**i) % 256
-            new_node = self.find_successor(finger_id)
-            if new_node:
-                self.finger_table[finger_id] = new_node
-                print(f"[+] Finger {finger_id} actualizado a {new_node}")
+            #si el nodo nuevo es menor que el que se esta haciendo cargo
+            print(node.id)
+            if node.id < self.finger_table[finger_id].id:
+                #si me puedo hacer cargo 
+                if (finger_id) <= node.id:
+                    self.finger_table[finger_id].id = node
+                    print(f"[+] Finger {finger_id} actualizado a {node.id}")
+            # si el nodo es mayor que el que se esta haciendo cargo, pero este se esta haciendo cargo de un dato con id mas grande. 
+            elif self.finger_table[finger_id].id < (finger_id):
+                self.finger_table[finger_id]= node
+                print(f"[+] Finger {finger_id} actualizado a {node.id}")
     
-    def find_successor(self, k):
-        """
-        Encuentra el sucesor de un nodo dado en la red Chord.
-        """
-        sorted_ids = sorted(self.finger_table.keys())
-        for node_id in sorted_ids:
-            node = self.finger_table[node_id]
-            if node_id >= k and self.verificar_ip_activa(node, TCP_PORT):
-                return node
-        return self.succesor if self.verificar_ip_activa(self.succesor, TCP_PORT) else self.id
+
 
     def verificar_ip_activa(self, ip, puerto):
         """
@@ -391,23 +440,12 @@ class ChordNode:
         # Obtener mi IP
         node_info = f"{self.ip}"
         return int(hashlib.sha1(node_info.encode()).hexdigest(), 16) % (2 ** 8)
+    def generate_id_(self, ip):
+        """Genera un ID único basado en el hash de la IP y puerto."""
+        # Obtener mi IP
+        node_info = f"{ip}"
+        return int(hashlib.sha1(node_info.encode()).hexdigest(), 16) % (2 ** 8)
 
-
-class NodeReference:
-    def __init__(self, ip: int, port: int, set: bool=False):
-        self.id = ip if set else self.set_id(str(ip))
-        self.ip = None if set else ip
-        self.port = port
-    
-    # Hashear la data
-    def set_id(self, data: str) -> int:
-        """
-        Hashea una cadena usando SHA-1 y devuelve un entero.
-        """
-        print("HASHING...")
-        ret = int(hashlib.sha1(data.encode()).hexdigest(), 16) % (2 ** 8)
-        print("data: ", data, "return: ", ret)
-        return ret
 
 if __name__ == "__main__":
 
